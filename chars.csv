@@ -1,0 +1,214 @@
+Absolute accruals,"Bandyopadhyay, Huang, and Wirjanto",2010,absacc
+"Operating accruals (GHZ, Org)",Sloan,1996,acc
+Firm age,"Jiang, Lee, and Zhang",2005,age
+Asset liquidity to book assets,Ortiz-Molina and Phillips,2014,aliq_at
+Asset liquidity to market assets,Ortiz-Molina and Phillips,2014,aliq_mat
+Illiquidity ,Amihud,2002,ami_126d
+Book leverage,Fama and French,1992,at_be
+Asset growth,"Cooper, Gulen, and Schill",2008,at_gr1
+Assets-to-market,Fama and French,1992,at_me
+Capital turnover,Haugen and Baker,1996,at_turnover
+Bid-ask spread,Amihud and Mendelson,1986,baspread
+Chage in common equity,Richardson et al.,2005,be_gr1a
+Book-to-market (December ME),"Rosenberg, Reid, and Lanstein",1985,be_me
+Market beta  (GHZ),Fama and MacBeth,1973,beta
+"Market beta (Org, JKP)",Fama and MacBeth,1973,beta_60m
+Dimson Beta,Dimson,1979,beta_dimson_21d
+Frazzini-Pedersen beta,Frazzini and Pedersen,2014,betabab_1260d
+Downside beta,"Ang, Chen, and Xing",2006,betadown_252d
+Beta squared (GHZ),Fama and MacBeth,1973,betasq
+Book-to-market enterprise value,"Penman, Richardson, and Tuna",2007,bev_mev
+High-low bid-ask spread,Corwin and Schultz,2012,bidaskhl_21d
+Industry-adjusted book-to-market,"Asness, Porter, and Stevens",2000,bm_ia
+Abnormal corporate investment,"Titman, Wei, and Xie",2004,capex_abn
+CAPEX growth (1 year),Xie,2001,capx_gr1
+Two-year investment growth,Anderson and Garcia-Feijoo,2006,capx_gr2
+Three-year investment growth,Anderson and Garcia-Feijoo,2006,capx_gr3
+Cash-to-assets,Palazzo,2012,cash_at
+Cash flow-to-debt,Ou and Penman,1989,cashdebt
+Cash productivity,Chandrashekar and Rao,2009,cashpr
+"Operating Cash flows to price (Org, GHZ)","Desai, Rajgopal, and Venkatachalam",2004,cfp
+Industry-adjusted cash flow-to-price,"Asness, Porter, and Stevens",2000,cfp_ia
+Change in asset turnover,Soliman,2008,chatoia
+Net stock issues (GHZ),Pontiff and Woodgate,2008,chcsho
+"Net stock issues (JKP, Org)",Pontiff and Woodgate,2008,chcsho_12m
+Industry-adjusted change in employees,"Asness, Porter, and Stevens",2000,chempia
+Change in 6-month momentum,Gettleman and Marks,2006,chmom
+Change in profit margin,Soliman,2008,chpmia
+Tax expense surprise,Thomas and Zhang,2011,chtx
+Change in current operating assets,Richardson et al.,2005,coa_gr1a
+Change in current Ooperating liabilities,Richardson et al.,2005,col_gr1a
+Convertible debt indicator,Valta,2016,convind
+Cash-based operating profitablility,Ball et al.,2016,cop_at
+Cash-based operating profits to lagged assets,Ball et al.,2016,cop_atl1
+Market correlation,Assness et al.,2020,corr_1260d
+Coskewness,Harvey and Siddique,2000,coskew_21d
+Change in net non-cash working capital,Richardson et al.,2005,cowc_gr1a
+Current ratio,Ou and Penman,1989,currat
+Net debt finance,"Bradshaw, Richardson, and Sloan",2006,dbnetis_at
+Composite debt issuance,"Lyandres, Sun, and Zhang",2008,debt_gr3
+Debt to market,Bhandari,1988,debt_me
+Depreciation to PP&E,Holthausen and Larcker,1992,depr
+Gross margin growth to sales growth,Abarbanell and Bushee,1998,dgp_dsale
+Dividend yield (JKP),Litzenberger and Ramaswamy,1979,div12m_me
+Dividend initiation,"Michaely, Thaler, and Womack",1995,divi
+Dividend omission,"Michaely, Thaler, and Womack",1995,divo
+"Dollar trading volume (Org, GHZ)","Brennan, Chordia, and Subrahmanyam",1998,dolvol
+Dollar trading volume (JKP),"Brennan, Chordia, and Subrahmanyam",1998,dolvol_126d
+Volatility of dollar trading volume (JKP),"Chordia, Subrahmanyam, and Anshuman",2001,dolvol_var_126d
+Sales growth to inventory growth,Abarbanell and Bushee,1998,dsale_dinv
+Sales growth to receivable growth,Abarbanell and Bushee,1998,dsale_drec
+Sales growth to SG&A growth,Abarbanell and Bushee,1998,dsale_dsga
+Dividend yield (GHZ),Litzenberger and Ramaswamy,1979,dy
+Earnings smoothness,Francis et al.,2004,earnings_variability
+Return on net operating assets,Soliman,2008,ebit_bev
+Profit margin,Soliman,2008,ebit_sale
+Enterprise multiple (JKP),Loughran and Wellman,2011,ebitda_mev
+Employment growth,"Belo, Lin, and Bazdresch",2014,emp_gr1
+Enterprise multiple,Loughran and Wellman,2011,enterprise_multiple
+Equity duration,"Dechow, Sloan, and Soliman",2004,eq_dur
+Net equity finance,"Bradshaw, Richardson, and Sloan",2006,eqnetis_at
+"Composite equity issuance (JKP, 12 months)",Daniel and Titman,2006,eqnpo_12m
+Composite equity issuance (Org),Daniel and Titman,2006,eqnpo_60m
+Net payout yield,Boudoukh et al.,2007,eqnpo_me
+Payout yield,Boudoukh et al.,2007,eqpo_me
+Piotroski F-score (JKP),Piotroski,2000,f_score
+Cash flow-to-price,"Lakonishok, Shleifer, and Vishny",1994,fcf_me
+Change in financial liabilities,Richardson et al.,2005,fnl_gr1a
+Gross profits-to-assets,Novy-Marx,2013,gp_at
+Gross profits-to-lagged assets,Novy-Marx,2013,gp_atl1
+Industry concentration (total assets),Hou and Robinson,2006,herf_at
+Industry concentration (book equity),Hou and Robinson,2006,herf_be
+Industry concentration (sales),Hou and Robinson,2006,herf_sale
+Idiosyncratic volatility (GHZ),"Ali, Hwang, and Trombley",2003,idiovol
+Industry momentum ,Moskowitz and Grinblatt,1999,indmom
+Intrinsic value-to-market,Frankel and Lee,1998,intrinsic_value
+Inventory growth,Belo and Lin,2012,inv_gr1
+Inventory change,Thomas and Zhang,2002,inv_gr1a
+CAPEX and inventory,Chen and Zhang,2010,invest
+Initial public offerings,Loughran and Ritter,1995,ipo
+Idiosyncratic skewness (CAPM),"Bali, Engle, and Murray",2016,iskew_capm_21d
+Idiosyncratic skewness (FF3),"Bali, Engle, and Murray",2016,iskew_ff3_21d
+Idiosyncratic skewness (q-factor),"Bali, Engle, and Murray",2016,iskew_hxz4_21d
+Idiosyncratic volatility (CAPM),Ang et al.,2006,ivol_capm_21d
+"Idiosyncratic volatility (Org, JKP)","Ali, Hwang, and Trombley",2003,ivol_capm_252d
+Idiosyncratic volatility (FF3),Ang et al.,2006,ivol_ff3_21d
+Idiosyncratic volatility (q-factor),Ang et al.,2006,ivol_hxz4_21d
+Kaplan-Zingales index,"Lamont, Polk, and Saa-Requejo",2001,kz_index
+Change in long-term debt,Richardson et al.,2005,lgr
+Change in long-term net operating assets,"Fairfield, Whisenant, and Yohn",2003,lnoa_gr1a
+Chagne in long-term investments ,Richardson et al.,2005,lti_gr1a
+Market equity,Banz,1981,market_equity
+Mispricing factor: Management,Stambaugh and Yuan,2016,mispricing_mgmt
+Mispricing factor: Performance,Stambaugh and Yuan,2016,mispricing_perf
+Industry-adjusted firm size,"Asness, Porter, and Stevens",2000,mve_ia
+Change in non-current operating assets,Richardson et al.,2005,ncoa_gr1a
+Change in non-current operating liabilities,Richardson et al.,2005,ncol_gr1a
+Net debt-to-price,"Penman, Richardson, and Tuna",2007,netdebt_me
+Net external finance,"Bradshaw, Richardson, and Sloan",2006,netis_at
+Change in net financial assets,Richardson et al.,2005,nfna_gr1a
+Earnings persistence,Francis et al.,2004,ni_ar1
+Return on equity,Haugen and Baker,1996,ni_be
+Number of consecutive quarters with earnings increases,"Barth, Elliott, and Finn",1999,ni_inc8q
+Earnings predictability,Francis et al.,2004,ni_ivol
+Earnings to price,Basu,1983,ni_me
+Quarterly return on assets,"Balakrishnan, Bartov, and Faurel",2010,niq_at
+Change in quarterly return on assets,"Balakrishnan, Bartov, and Faurel",2010,niq_at_chg1
+Return on equity (quarterly),"Hou, Xue, and Zhang",2015,niq_be
+Change in quarterly return on equity,"Balakrishnan, Bartov, and Faurel",2010,niq_be_chg1
+Earnings surprise,"Foster, Olsen, and Shevlin",1984,niq_su
+Change in net non-current operating assets,Richardson et al.,2005,nncoa_gr1a
+Net operating assets,Hirshleifer et al.,2004,noa_at
+Change in net operating assets,Hirshleifer et al.,2004,noa_gr1a
+Ohlson O-score,Dichev,1998,o_score
+Operating accruals (JKP),Sloan,1996,oaccruals_at
+Percent operating accruals (JKP),"Hafzalla, Lundholm, and Van Winkle",2011,oaccruals_ni
+Operating cash flow to assets,Bouchard et al.,2019,ocf_at
+Change in operating cash flow to assets,Bouchard et al.,2019,ocf_at_chg1
+Operating Cash flows to price (JKP),"Desai, Rajgopal, and Venkatachalam",2004,ocf_me
+Cash flow volatility,Huang,2009,ocfq_saleq_std
+Operating profits-to-assets,Ball et al.,2016,op_at
+Operating profits-to-lagged assets,Ball et al.,2016,op_atl1
+Operating profits to book equity (JKP),Fama and French,2015,ope_be
+Operating profits to lagged book equity,Fama and French,2015,ope_bel1
+"Operating profits to book equity (GHZ, Org)",Fama and French,2015,operprof
+Operating leverage,Novy-Marx,2011,opex_at
+Industry-adjusted change in capital investment,Abarbanell and Bushee,1998,pchcapx_ia
+Change in current ratio,Ou and Penman,1989,pchcurrat
+Change in depreciation to PP&E,Holthausen and Larcker,1992,pchdepr
+Change in quick ratio,Ou and Penman,1989,pchquick
+Change in sales to inventory,Ou and Penman,1989,pchsaleinv
+"Percent operating accruals (GHZ, Org)","Hafzalla, Lundholm, and Van Winkle",2011,pctacc
+Taxable income to income (JKP),Lev and Nissim,2004,pi_nix
+Changes in PPE and inventory/assets,"Lyandres, Sun, and Zhang",2008,ppeinv_gr1a
+52-week high,George and Hwang,2004,prc_highprc_252d
+Share price,Miller and Scholes,1982,price
+Price delay based on R-squared,Hou and Moskowitz,2005,pricedelay
+Price delay based on slopes,Hou and Moskowitz,2005,pricedelay_slope
+"Piotroski F-score (GHZ, Org)",Piotroski,2000,ps
+Quality minus Junk: Composite,"Assness, Frazzini, and Pedersen",2018,qmj
+Quality minus Junk: Growth,"Assness, Frazzini, and Pedersen",2018,qmj_growth
+Quality minus Junk: Profitability,"Assness, Frazzini, and Pedersen",2018,qmj_prof
+Quality minus Junk: Safety,"Assness, Frazzini, and Pedersen",2018,qmj_safety
+Quick ratio,Ou and Penman,1989,quick
+Unexpected R&D increase,"Eberhart, Maxwell, and Siddique",2004,rd
+R&D to market,"Chan, Lakonishok, and Sougiannis",2001,rd_me
+R&D to sales,"Chan, Lakonishok, and Sougiannis",2001,rd_sale
+R&D capital-to-assets,Li,2011,rd5_at
+Real estate holdings,Tuzel,2010,realestate
+12 month residual momentum,"Blitz, Huij, and Martens",2011,resff3_12_1
+6 month residual momentum,"Blitz, Huij, and Martens",2011,resff3_6_1
+Short-term reversal,Jegadeesh,1990,ret_1_0
+Momentum (12 month),Jegadeesh and Titman,1993,ret_12_1
+Intermediate momentum (7-12),Novy-Marx,2012,ret_12_6
+Momentum (3 month),Jegadeesh and Titman,1993,ret_3_1
+Long-term reversal (12-36),De Bondt and Thaler,1985,ret_36_12
+Momentum (6 month),Jegadeesh and Titman,1993,ret_6_1
+Long-term reversal (12-60),De Bondt and Thaler,1985,ret_60_12
+Momentum (9 month),Jegadeesh and Titman,1993,ret_9_1
+Return volatility,Ang et al.,2006,retvol
+Maximum daily return,"Bali, Cakici, and Whitelaw",2011,rmax1_21d
+Highest 5 days of return,"Bali, Brown, and Tang",2017,rmax5_21d
+Highest 5 days of return to volatility,Assness et al.,2020,rmax5_rvol_21d
+ROA volatility,Francis et al.,2004,roavol
+Return on invested capital,Brown and Rowe,2007,roic
+Return skewness,"Bali, Engle, and Murray",2016,rskew_21d
+Revenue surprise (Karma),Karma,2009,rsup
+Asset turnover,Soliman,2008,sale_bev
+Labor force efficiency,Abarbanell and Bushee,1998,sale_emp_gr1
+Annual sales growth,"Lakonishok, Shleifer, and Vishny",1994,sale_gr1
+Three-year sales growth,"Lakonishok, Shleifer, and Vishny",1994,sale_gr3
+Sales to price,"Barbee, Mukherji, and Raines",1996,sale_me
+Sales-to-cash,Ou and Penman,1989,salecash
+Sales-to-inventory,Ou and Penman,1989,saleinv
+Revenue surprise,Jegadeesh and Livnat,2006,saleq_su
+Sales-to-receivables,Ou and Penman,1989,salerec
+"Year 1-lagged return, annual",Heston and Sadka,2008,seas_1_1an
+"Year 1-lagged return, nonannual",Heston and Sadka,2008,seas_1_1na
+"Years 11-15 lagged returns, annual",Heston and Sadka,2008,seas_11_15an
+"Years 11-15 lagged returns, nonannual",Heston and Sadka,2008,seas_11_15na
+"Years 16-20 lagged returns, annual",Heston and Sadka,2008,seas_16_20an
+"Years 16-20 lagged returns, nonannual",Heston and Sadka,2008,seas_16_20na
+"Years 2-5 lagged returns, annual",Heston and Sadka,2008,seas_2_5an
+"Years 2-5 lagged returns, nonannual",Heston and Sadka,2008,seas_2_5na
+"Years 6-10 lagged returns, annual",Heston and Sadka,2008,seas_6_10an
+"Years 6-10 lagged returns, nonannual",Heston and Sadka,2008,seas_6_10na
+Secured debt-to-total debt,Valta,2016,secured
+Secured debt indicator,Valta,2016,securedind
+Sin stock,Hong and Kacperczyk,2009,sin
+Volatility of dollar trading volume (GHZ),"Chordia, Subrahmanyam, and Anshuman",2001,std_dolvol
+Volatility of share turnover (GHZ),"Chordia, Subrahmanyam, and Anshuman",2001,std_turn
+Accrual volatility,"Bandyopadhyay, Huang, and Wirjanto",2010,stdacc
+Change in short-term investments,Richardson et al.,2005,sti_gr1a
+Total accruals,Richardson et al.,2005,taccruals_at
+Percent total accruals,"Hafzalla, Lundholm, and Van Winkle",2011,taccruals_ni
+Tangibility,Hahn and Lee,2009,tangibility
+"Taxable income to income (Org, GHZ)",Lev and Nissim,2004,tb
+Trend factor,"Han, Zhou, and Zhu",2016,trend_factor
+"Share turnover (Org, GHZ)","Datar, Naik, and Radcliffe",1998,turn
+Share turnover (JKP),"Datar, Naik, and Radcliffe",1998,turnover_126d
+Volatility of share turnover (JKP),"Chordia, Subrahmanyam, and Anshuman",2001,turnover_var_126d
+Altman Z-score,Dichev,1998,z_score
+Zero-trading days (6 months),Liu,2006,zero_trades_126d
+Zero-trading days (1 month),Liu,2006,zero_trades_21d
+Zero-trading days (12 months),Liu,2006,zero_trades_252d
