@@ -18,12 +18,18 @@ def preprocess_data():
     non_vals=['gvkey', 'datadate', 'primary']
     non_vals_temp = df[non_vals]
     rest_of_df = df.drop(non_vals,axis=1)
+    print('Imputation of NaN values. . .\n')
     df = impute_permno(rest_of_df)
-    df = pd.concat([non_vals_temp, df], axis=1)
 
+    print('Normalisation of vals. . .\n')
     # Normalize features
     scaler = MinMaxScaler()
     df = scaler.fit_transform(df)
+
+    # Scaler converts to np.ndarray, so convert back to pandas.DF
+    df = pd.DataFrame(df, columns = df.columns)
+
+    df = pd.concat([non_vals_temp, df], axis=1)
 
     # Split data into training, validation and OOS testing sets
     # Date ranges for these sets are configured in globals.py
