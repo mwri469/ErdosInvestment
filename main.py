@@ -1,6 +1,7 @@
 import numpy as np
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Dropout
+from data_funcs import load_training_data, load_test_data
 
 # 1. Define the NN-3 Model
 def create_nn_model(input_dim):

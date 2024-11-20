@@ -54,7 +54,7 @@ def load_val_data():
     _, (X_val, y_val), _ = split_data(df, predictors)
     return X_val, y_val
 
-def load_testing_data():
+def load_test_data():
     df, predictors = load_data()
     _, _, (X_test, y_test) = split_data(df, predictors)
     return X_test, y_test
