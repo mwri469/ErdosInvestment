@@ -1,0 +1,1 @@
+FILE_PATH = '../pyanomaly-master/output/merge.pickle'
