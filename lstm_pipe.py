@@ -10,6 +10,7 @@ def main():
 
     df = pd.DataFrame(obj)
 
+def impute_df_to_data(df):
     # Get indexes
     dates = df.index.get_level_values('date')
     permno_ids = df.index.get_level_values('permno')
@@ -33,12 +34,14 @@ def main():
 
     for j, p in tqdm(enumerate(permno_set)):
         idxs = [idx for idx, val in enumerate(permno_ids) if val == p]
-        temp_df = features.iloc[idxs]
-        temp_exret = exret.iloc[idxs]
+        temp_df = features.iloc[idxs].to_numpy()
+        temp_exret = exret.iloc[idxs].to_numpy()
         
         for i in range(len(temp_df) - past - future + 1):
-            X_arr[j] = temp_df.iloc[i:i+past]
-            y[j] = temp_exret.iloc[i+past:i+past+future]
+            X_arr[j] = temp_df[i:i+past]
+            y[j] = temp_exret[i+past:i+past+future]
+
+    return X_arr, y
         
 def impute_permno(df):
     """Imputes missing values within each permno group using the median.
@@ -55,6 +58,30 @@ def impute_permno(df):
     # Group by permno and fill missing values with the median
     df_imputed = df.groupby('permno').transform(lambda x: x.fillna(x.median()))
     return df_imputed
+
+# Function to load the dataset and exclude unwanted columns
+def load_data():
+    # Load the pickle file
+    with open(FILE_PATH, 'rb') as f:
+        obj = pkl.load(f)
+
+    df = pd.DataFrame(obj)
+    
+    return df
+
+# Function to split the data into training, validation, and testing sets
+def split_data(df):
+    # Filter the DataFrame based on date ranges
+    train_mask = (df.index.get_level_values('date') >= TRAINING_DATES[0]) & (df.index.get_level_values('date') < TRAINING_DATES[1])
+    val_mask = (df.index.get_level_values('date') >= VALIDATION_DATES[0]) & (df.index.get_level_values('date') < VALIDATION_DATES[1])
+    test_mask = ~(train_mask | val_mask)
+
+    # Split the X data
+    train_df = df[train_mask]
+    val_df = df[val_mask]
+    test_df = df[test_mask]
+
+    return (train_df), (val_df), (test_df)
 
 if __name__ == '__main__':
     main()
