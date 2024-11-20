@@ -8,11 +8,18 @@ def preprocess_data():
     df = load_data()
     
     # Ensure 'date' and 'permno' are in the index
-    if not isinstance(df.index, pd.MultiIndex) or df.index.names not in set(['permno', 'date']):
+    if not isinstance(df.index, pd.MultiIndex): #or df.index.names not in set(['permno', 'date']):
         raise ValueError("Expected a MultiIndex DataFrame with 'permno' and 'date' as index levels.")
     
+    # pd.set_option('display.max_rows', 500)
+    # print(df.info(verbose=True, show_counts=True))
+    
     # Impute data, median of each permno group for NaN vals
-    df = impute_permno(df)
+    non_vals=['gvkey', 'datadate', 'primary']
+    non_vals_temp = df[non_vals]
+    rest_of_df = df.drop(non_vals,axis=1)
+    df = impute_permno(rest_of_df)
+    df = pd.concat([non_vals_temp, df], axis=1)
 
     # Normalize features
     scaler = MinMaxScaler()
