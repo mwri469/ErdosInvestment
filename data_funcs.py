@@ -1,47 +1,41 @@
 import pandas as pd
 import numpy as np
-
-# Path to the dataset
-DATASET_PATH = "../pyanomaly-master/output/merge.pickle"
+import pickle as pkl
+from globals import *
 
 # Function to load the dataset and exclude unwanted columns
 def load_data():
     # Load the pickle file
-    df = pd.read_pickle(DATASET_PATH)
-    
-    # Ensure data is sorted by 'permno' and 'date'
-    df.sort_values(by=["permno", "date"], inplace=True)
+    with open(FILE_PATH, 'rb') as f:
+        obj = pkl.load(f)
+
+    df = pd.DataFrame(obj)
     
     # Columns to exclude from the training set
     exclude_columns = ["gvkey", "datadate", "primary", "exchcd", "ret", "exret", "rf"]
+    exret = df.exret
+    features = df.drop(columns=exclude_columns)
     
-    # Filter the columns for predictors
-    predictors = [col for col in df.columns if col not in exclude_columns]
-    
-    return df, predictors
+    return features, exret
 
 # Function to split the data into training, validation, and testing sets
 def split_data(df, predictors):
-    # Define date ranges for the splits
-    train_end_date = "2010-12-31"  # Example: Adjust as needed
-    val_end_date = "2019-12-31"    # Example: Adjust as needed
-    
-    # Create the splits
-    train_data = df[df["date"] <= train_end_date]
-    val_data = df[(df["date"] > train_end_date) & (df["date"] <= val_end_date)]
-    test_data = df[df["date"] > val_end_date]
-    
-    # Extract features (X) and target (y)
-    X_train = train_data[predictors]
-    y_train = train_data["ret"]  # Assuming 'ret' is the target variable
-    
-    X_val = val_data[predictors]
-    y_val = val_data["ret"]
-    
-    X_test = test_data[predictors]
-    y_test = test_data["ret"]
-    
-    return (X_train, y_train), (X_val, y_val), (X_test, y_test)
+    # Filter the DataFrame based on date ranges
+    train_mask = (df.index.get_level_values('date') >= TRAINING_DATES[0]) & (df.index.get_level_values('date') < TRAINING_DATES[1])
+    val_mask = (df.index.get_level_values('date') >= VALIDATION_DATES[0]) & (df.index.get_level_values('date') < VALIDATION_DATES[1])
+    test_mask = ~(train_mask | val_mask)
+
+    # Split the X data
+    train_df = df[train_mask]
+    val_df = df[val_mask]
+    test_df = df[test_mask]
+
+    # Split y data
+    train_y = predictors[train_mask]
+    val_y = predictors[val_mask]
+    test_y = predictors[test_mask]
+
+    return (train_df, train_y), (val_df, val_y), (test_df, test_y)
 
 # Functions to load each split
 def load_training_data():
