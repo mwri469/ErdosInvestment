@@ -1,6 +1,7 @@
 import pandas as pd
 import torch
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import MinMaxScaler
+from lstm_pipe import *
 from globals import *
 
 def preprocess_data():
