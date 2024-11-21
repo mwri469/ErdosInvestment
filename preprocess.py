@@ -3,43 +3,61 @@ import torch
 from sklearn.preprocessing import StandardScaler
 from globals import *
 
-def preprocess_data(file_path):
+def preprocess_data():
     # Load the dataset
-    df = pd.read_pickle(file_path)
+    df = load_data()
     
     # Ensure 'date' and 'permno' are in the index
-    if not isinstance(df.index, pd.MultiIndex) or df.index.names != ['permno', 'date']:
+    if not isinstance(df.index, pd.MultiIndex): #or df.index.names not in set(['permno', 'date']):
         raise ValueError("Expected a MultiIndex DataFrame with 'permno' and 'date' as index levels.")
     
-    # Drop non-feature columns
-    excluded_columns = ['gvkey', 'datadate', 'primary', 'exchcd']  # Extend as needed
-    features = df.drop(columns=excluded_columns)
+    # pd.set_option('display.max_rows', 500)
+    # print(df.info(verbose=True, show_counts=True))
     
-    # Identify firm change boundaries
-    permno_groups = features.index.get_level_values('permno')
-    is_firm_boundary = permno_groups != permno_groups.shift(-1)
-    
-    # Remove rows at firm boundaries to avoid firm overlap
-    features = features[~is_firm_boundary]
-    
+    # Impute data, median of each permno group for NaN vals
+    non_vals=['gvkey', 'datadate', 'primary']
+    non_vals_temp = df[non_vals]
+    rest_of_df = df.drop(non_vals,axis=1)
+    print('Imputation of NaN values. . .\n')
+    df = impute_permno(rest_of_df)
+
+    print('Normalisation of vals. . .\n')
     # Normalize features
-    scaler = StandardScaler()
-    normalized_features = scaler.fit_transform(features)
+    scaler = MinMaxScaler()
+    df = scaler.fit_transform(df)
+
+    # Scaler converts to np.ndarray, so convert back to pandas.DF
+    df = pd.DataFrame(df, columns = df.columns)
+
+    df = pd.concat([non_vals_temp, df], axis=1)
+
+    # Split data into training, validation and OOS testing sets
+    # Date ranges for these sets are configured in globals.py
+    train_df, val_df, test_df = split_data(df)
+
+    # Convert to appropriate format for converting to tensors
+    print('Processing training df. . .\n')
+    X_train, y_train = impute_df_to_data(train_df)
+
+    print('Processing validation df. . .\n')
+    X_val, y_val = impute_df_to_data(val_df)
+
+    print('Processing OOS testing df. . .\n')
+    X_oos, y_oos = impute_df_to_data(test_df)
     
     # Convert normalized features to PyTorch tensors
-    feature_tensors = torch.tensor(normalized_features, dtype=torch.float32)
+    # TODO: Work out how to convert to tensors
+    feature_tensors = None # Will do this later: torch.tensor(normalized_features, dtype=torch.float32)
     
     # Return tensor and scaler for potential use in inverse transformation
     return feature_tensors, scaler
 
-if __name__ == "__main__":
-    # File path to the dataset
-    file_path = "../pyanomaly-master/output/merge.pickle"
-    
+if __name__ == "__main__": 
     # Preprocess the data
-    data_tensors, fitted_scaler = preprocess_data(file_path)
+    data_tensors, fitted_scaler = preprocess_data()
     
     # Save preprocessed tensors for future use
-    torch.save(data_tensors, "preprocessed_data.pt")
+    # TODO: uncomment when tensors are worked out
+    # torch.save(data_tensors, "preprocessed_data.pt")
     
     print("Data preprocessing complete. Tensor saved as 'preprocessed_data.pt'.")

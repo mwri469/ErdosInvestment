@@ -73,5 +73,29 @@ def impute_permno(df):
     df_imputed = df.groupby('permno').transform(lambda x: x.fillna(x.median()))
     return df_imputed
 
+# Function to load the dataset and exclude unwanted columns
+def load_data():
+    # Load the pickle file
+    with open(FILE_PATH, 'rb') as f:
+        obj = pkl.load(f)
+
+    df = pd.DataFrame(obj)
+    
+    return df
+
+# Function to split the data into training, validation, and testing sets
+def split_data(df):
+    # Filter the DataFrame based on date ranges
+    train_mask = (df.index.get_level_values('date') >= TRAINING_DATES[0]) & (df.index.get_level_values('date') < TRAINING_DATES[1])
+    val_mask = (df.index.get_level_values('date') >= VALIDATION_DATES[0]) & (df.index.get_level_values('date') < VALIDATION_DATES[1])
+    test_mask = ~(train_mask | val_mask)
+
+    # Split the X data
+    train_df = df[train_mask]
+    val_df = df[val_mask]
+    test_df = df[test_mask]
+
+    return (train_df), (val_df), (test_df)
+
 if __name__ == '__main__':
     main()
