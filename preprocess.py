@@ -21,17 +21,20 @@ def preprocess_data():
     rest_of_df = df.drop(non_vals,axis=1)
     print('Imputation of NaN values. . .\n')
     df = impute_permno(rest_of_df)
+    del rest_of_df
 
     print('Normalisation of vals. . .\n')
     # Normalize features
+    or_cols = df.columns
     scaler = MinMaxScaler()
     df = scaler.fit_transform(df)
 
     # Scaler converts to np.ndarray, so convert back to pandas.DF
-    df = pd.DataFrame(df, columns = df.columns)
+    df = pd.DataFrame(df, columns = or_cols)
 
     df = pd.concat([non_vals_temp, df], axis=1)
-
+    del non_vals_temp
+    
     # Split data into training, validation and OOS testing sets
     # Date ranges for these sets are configured in globals.py
     train_df, val_df, test_df = split_data(df)

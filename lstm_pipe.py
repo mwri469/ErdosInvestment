@@ -56,6 +56,8 @@ def imputed_df_to_data(df):
         for i in range(len(temp_df) - PAST - FUTURE + 1):
             X_arr[j] = temp_df[i:i+PAST]
             y[j] = temp_exret[i+PAST:i+PAST+FUTURE]
+
+    return X_arr, y
         
 def impute_permno(df):
     """Imputes missing values within each permno group using the median.
