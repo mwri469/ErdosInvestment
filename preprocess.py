@@ -38,13 +38,13 @@ def preprocess_data():
 
     # Convert to appropriate format for converting to tensors
     print('Processing training df. . .\n')
-    X_train, y_train = impute_df_to_data(train_df)
+    X_train, y_train = imputed_df_to_data(train_df)
 
     print('Processing validation df. . .\n')
-    X_val, y_val = impute_df_to_data(val_df)
+    X_val, y_val = imputed_df_to_data(val_df)
 
     print('Processing OOS testing df. . .\n')
-    X_oos, y_oos = impute_df_to_data(test_df)
+    X_oos, y_oos = imputed_df_to_data(test_df)
     
     # Convert normalized features to PyTorch tensors
     # TODO: Work out how to convert to tensors
