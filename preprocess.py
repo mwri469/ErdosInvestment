@@ -1,6 +1,7 @@
 import pandas as pd
 import torch
 from sklearn.preprocessing import StandardScaler
+from globals import *
 
 def preprocess_data(file_path):
     # Load the dataset

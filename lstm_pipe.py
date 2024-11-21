@@ -10,6 +10,25 @@ def main():
 
     df = pd.DataFrame(obj)
 
+def imputed_df_to_data(df):
+    """
+    This function takes in the imputed pd.DataFrame and converts it to a more appropriate format
+    for NN training.
+    NOTE: PAST, FUTURE dates are configured in globals
+    ... keep at 1 if not going into LSTM
+
+    Parameters:
+    -----------
+    ... df      : pd.DataFrame
+    ...     -DataFrame with imputed values
+
+    Returns:
+    --------
+    ... X_arr   : np.array
+    ...     -numpy array of X values mapped at each index to a corresponding y-values
+    ... y       : np.array
+...         -numpy array of the corresponding y-values (exret)
+    """
     # Get indexes
     dates = df.index.get_level_values('date')
     permno_ids = df.index.get_level_values('permno')
@@ -27,18 +46,16 @@ def main():
     features = df.drop(columns=exclude_columns)
 
     # Build data for lstm
-    past = 5 # 5 months of data
-    future = 1 # next month risk prem
     X_arr,y = np.empty(len(permno_set)), np.empty(len(permno_set))
 
     for j, p in tqdm(enumerate(permno_set)):
         idxs = [idx for idx, val in enumerate(permno_ids) if val == p]
-        temp_df = features.iloc[idxs]
-        temp_exret = exret.iloc[idxs]
+        temp_df = features.iloc[idxs].to_numpy()
+        temp_exret = exret.iloc[idxs].to_numpy()
         
-        for i in range(len(temp_df) - past - future + 1):
-            X_arr[j] = temp_df.iloc[i:i+past]
-            y[j] = temp_exret.iloc[i+past:i+past+future]
+        for i in range(len(temp_df) - PAST - FUTURE + 1):
+            X_arr[j] = temp_df[i:i+PAST]
+            y[j] = temp_exret[i+PAST:i+PAST+FUTURE]
         
 def impute_permno(df):
     """Imputes missing values within each permno group using the median.
