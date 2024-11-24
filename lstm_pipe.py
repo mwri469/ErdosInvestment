@@ -58,22 +58,39 @@ def imputed_df_to_data(df):
             y[j] = temp_exret[i+PAST:i+PAST+FUTURE]
 
     return X_arr, y
-        
+
 def impute_permno(df):
     """Imputes missing values within each permno group using the median.
 
     Parameters:
     -----------
-    ... df: A Pandas DataFrame with a MultiIndex.
+    df: A Pandas DataFrame with a MultiIndex.
 
     Returns:
     --------
-    ... df_imputed: A DataFrame with imputed values.
+    df_imputed: A DataFrame with imputed values.
     """
+    print('USING NEW IMPUTE METHOD')
 
-    # Group by permno and fill missing values with the median
-    df_imputed = df.groupby('permno').transform(lambda x: x.fillna(x.median()))
-    return df_imputed
+    # Remove columns with high NaN percentage
+    print('Removing columns with a NaN % > 30. . .\n')
+    for col in tqdm(df.columns):
+        percent_NaN = df[col].isna().mean()
+        if percent_NaN > 0.3:
+            # print(f'\n Deleting column {col} with NaN: {percent_NaN}%. . .\n')
+            df.drop(col, axis=1, inplace=True)
+
+    print('Imputing median for each permno. . .\n')
+    # Get unique permno IDs
+    permno_ids = df.index.get_level_values('permno').unique()
+
+    # Iterate over permno IDs and impute missing values
+    for permno in tqdm(permno_ids):
+        df.loc[df.index.get_level_values('permno') == permno] = df.loc[
+            df.index.get_level_values('permno') == permno
+        ].fillna(df.loc[df.index.get_level_values('permno') == permno].median())
+
+    return df
 
 # Function to load the dataset and exclude unwanted columns
 def load_data():
