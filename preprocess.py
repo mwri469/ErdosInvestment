@@ -16,28 +16,30 @@ def preprocess_data():
     # print(df.info(verbose=True, show_counts=True))
     
     # Impute data, median of each permno group for NaN vals
-    non_vals=['gvkey', 'datadate', 'primary']
+    non_vals=["gvkey", "datadate", "primary"] #, "exchcd", "ret", "exret", "rf", "me"]
     non_vals_temp = df[non_vals]
-    rest_of_df = df.drop(non_vals,axis=1)
+    dropped_df = df.drop(non_vals,axis=1)
     print('Imputation of NaN values. . .\n')
-    df = impute_permno(rest_of_df)
-    del rest_of_df
+    imputed_df = impute_permno(dropped_df)
+    del dropped_df
 
     print('Normalisation of vals. . .\n')
     # Normalize features
-    or_cols = df.columns
+    or_cols = imputed_df.columns
     scaler = MinMaxScaler()
-    df = scaler.fit_transform(df)
+    temp_transformed_df = scaler.fit_transform(imputed_df)
+    del imputed_df
+    transformed_df = pd.DataFrame(temp_transformed_df, index=imputed_df.index, columns=or_cols)
+    del temp_transformed_df
 
     # Scaler converts to np.ndarray, so convert back to pandas.DF
-    df = pd.DataFrame(df, columns = or_cols)
-
-    df = pd.concat([non_vals_temp, df], axis=1)
-    del non_vals_temp
+    df = pd.concat([non_vals_temp, transformed_df], axis=1)
+    del non_vals_temp, transformed_df
     
     # Split data into training, validation and OOS testing sets
     # Date ranges for these sets are configured in globals.py
     train_df, val_df, test_df = split_data(df)
+    del df
 
     # Convert to appropriate format for converting to tensors
     print('Processing training df. . .\n')
