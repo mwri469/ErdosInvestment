@@ -46,7 +46,10 @@ def imputed_df_to_data(df):
     features = df.drop(columns=exclude_columns)
 
     # Build data for lstm
-    X_arr,y = np.empty(len(permno_set)), np.empty(len(permno_set))
+    placeholder_X_list = np.empty(features[:PAST].shape)
+    placeholder_y_list = np.empty(exret[PAST:PAST+FUTURE].shape)
+    X_arr = np.array([placeholder_X_list for _ in range(len(permno_set))])
+    y=np.array([placeholder_y_list for _ in range(len(permno_set))])
 
     for j, p in tqdm(enumerate(permno_set)):
         idxs = [idx for idx, val in enumerate(permno_ids) if val == p]
