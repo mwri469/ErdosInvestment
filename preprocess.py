@@ -1,12 +1,25 @@
 import pandas as pd
 import torch
 from sklearn.preprocessing import MinMaxScaler
+from sklearn.metrics import mean_squared_error
+import pickle as pkl
+import tensorflow as tf
 from lstm_pipe import *
 from globals import *
 
 def preprocess_data():
     # Load the dataset
+    print('Loading datasets. . .\n')
     df = load_data()
+    # with open('../pyanomaly-master/output/merge.pickle','rb') as f:
+    #     obj = pkl.load(f)
+
+    # df2 = pd.DataFrame(obj)
+
+    # df = pd.concat([df2,df], join='inner')
+    # del df2
+
+    print(df.info(verbose=True, show_counts=True))
     
     # Ensure 'date' and 'permno' are in the index
     if not isinstance(df.index, pd.MultiIndex): #or df.index.names not in set(['permno', 'date']):
@@ -28,13 +41,15 @@ def preprocess_data():
     or_cols = imputed_df.columns
     scaler = MinMaxScaler()
     temp_transformed_df = scaler.fit_transform(imputed_df)
-    del imputed_df
     transformed_df = pd.DataFrame(temp_transformed_df, index=imputed_df.index, columns=or_cols)
-    del temp_transformed_df
+    del temp_transformed_df, imputed_df
 
     # Scaler converts to np.ndarray, so convert back to pandas.DF
     df = pd.concat([non_vals_temp, transformed_df], axis=1)
     del non_vals_temp, transformed_df
+
+    with open('data/imputed_df.pickle', 'wb') as f:
+        pkl.dump(df, f)
     
     # Split data into training, validation and OOS testing sets
     # Date ranges for these sets are configured in globals.py
@@ -53,10 +68,12 @@ def preprocess_data():
     
     # Convert normalized features to PyTorch tensors
     # TODO: Work out how to convert to tensors
-    feature_tensors = None # Will do this later: torch.tensor(normalized_features, dtype=torch.float32)
+    train_data = tf.data.Dataset.from_tensor_slices((X_train, y_train)).batch(256).prefetch(tf.data.experimental.AUTOTUNE)
+    val_data = tf.data.Dataset.from_tensor_slices((X_val, y_val)).batch(256).prefetch(tf.data.experimental.AUTOTUNE)
+    oos_data = tf.data.Dataset.from_tensor_slices((X_oos, y_oos)).batch(256).prefetch(tf.data.bexperimental.AUTOTUNE)
     
     # Return tensor and scaler for potential use in inverse transformation
-    return feature_tensors, scaler
+    return (train_data, val_data, oos_data), scaler
 
 if __name__ == "__main__": 
     # Preprocess the data
