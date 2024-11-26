@@ -1,5 +1,8 @@
+import numpy as np
 import pandas as pd
+import pickle as pkl
 import torch
+from tqdm import tqdm
 
 import tensorflow as tf
 import keras
@@ -9,7 +12,6 @@ from keras.layers import LSTM, Dense, Input
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics import mean_squared_error
 
-import pickle as pkl
 from lstm_pipe import *
 from globals import *
 from preprocess import *
@@ -21,10 +23,20 @@ def main():
 
     train, val, oos = data_to_tensors(X_train, y_train, X_val, y_val, X_oos, y_oos)
 
-    models = []
+    built_model = build_models(X_train)
 
-    for i in range(NUM_MODELS):
-        models.append()
+    print('For future reference : \n')
+    print(f'\tType model : {type(built_model)}\n')
+    print(f'\tType train/val/oos datasets : {type(train)}\n')
+    print(f'\tType preprocessed X_... : {type(X_val)}\n')
+
+    models = []
+    
+    # Train multiple models and collect them
+    for i in tqdm(range(NUM_MODELS)):
+        model = build_models(X_train)  # Build a new model instance
+        trained_model, _ = train_model(train, val, model, i)  # Train the model
+        models.append(trained_model)  # Store the trained model
 
 def data_to_tensors(X_train, y_train, X_val, y_val, X_oos, y_oos):
     train_data = tf.data.Dataset.from_tensor_slices((X_train, y_train)).batch(256).prefetch(tf.data.experimental.AUTOTUNE)
@@ -34,9 +46,9 @@ def data_to_tensors(X_train, y_train, X_val, y_val, X_oos, y_oos):
 
 def build_models(X):
     model = Sequential([
-        Input((PAST, X.shape[2]))
+        Input((PAST, X.shape[2])),
         LSTM(32),
-        LSTM(16)
+        LSTM(16),
         LSTM(8),
         Dense(FUTURE)
     ])
@@ -45,7 +57,7 @@ def build_models(X):
 
     return model
 
-def train(train, test, model, i, epochs=30):
+def train_model(train, test, model, i, epochs=30):
     es_callback = keras.callbacks.EarlyStopping(monitor='val_loss', patience=5)
 
     vbs =0
@@ -62,6 +74,8 @@ def train(train, test, model, i, epochs=30):
                 callbacks=[es_callback, modelckpt_callback],
                 verbose=vbs
             )
+    
+    return model, history
 
 if __name__ == '__main__':
     main()

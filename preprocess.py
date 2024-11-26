@@ -48,8 +48,8 @@ def preprocess_data():
     df = pd.concat([non_vals_temp, transformed_df], axis=1)
     del non_vals_temp, transformed_df
 
-    with open('data/imputed_df.pickle', 'wb') as f:
-        pkl.dump(df, f)
+    # with open('data/imputed_df.pickle', 'wb') as f:
+    #     pkl.dump(df, f)
     
     # Split data into training, validation and OOS testing sets
     # Date ranges for these sets are configured in globals.py
@@ -65,10 +65,6 @@ def preprocess_data():
 
     print('Processing OOS testing df. . .\n')
     X_oos, y_oos = imputed_df_to_data(test_df)
-    
-    # Convert normalized features to PyTorch tensors
-    # TODO: Work out how to convert to tensors
-
     
     # Return tensor and scaler for potential use in inverse transformation
     return (X_train, y_train, X_val, y_val, X_oos, y_oos), scaler

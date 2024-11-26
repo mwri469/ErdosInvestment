@@ -15,3 +15,6 @@ OOS_TEST_DATES = ('2021-01-01', None)
 # Only relevent for LSTM models, keep 1 for standard models
 PAST = 5
 FUTURE = 1
+
+# Model params
+NUM_MODELS = 100
