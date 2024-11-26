@@ -68,12 +68,10 @@ def preprocess_data():
     
     # Convert normalized features to PyTorch tensors
     # TODO: Work out how to convert to tensors
-    train_data = tf.data.Dataset.from_tensor_slices((X_train, y_train)).batch(256).prefetch(tf.data.experimental.AUTOTUNE)
-    val_data = tf.data.Dataset.from_tensor_slices((X_val, y_val)).batch(256).prefetch(tf.data.experimental.AUTOTUNE)
-    oos_data = tf.data.Dataset.from_tensor_slices((X_oos, y_oos)).batch(256).prefetch(tf.data.bexperimental.AUTOTUNE)
+
     
     # Return tensor and scaler for potential use in inverse transformation
-    return (train_data, val_data, oos_data), scaler
+    return (X_train, y_train, X_val, y_val, X_oos, y_oos), scaler
 
 if __name__ == "__main__": 
     # Preprocess the data
@@ -84,3 +82,4 @@ if __name__ == "__main__":
     # torch.save(data_tensors, "preprocessed_data.pt")
     
     print("Data preprocessing complete. Tensor saved as 'preprocessed_data.pt'.")
+
