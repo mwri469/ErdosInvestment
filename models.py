@@ -26,13 +26,18 @@ def main():
 
     models = []
     
-    # Train multiple models and collect them
+    # Train multiple models and collect 
+    print('\nTraining models in ensemble. . .')
     for i in tqdm(range(NUM_MODELS)):
         model = build_models(X_train)  # Build a new model instance
         trained_model, _ = train_model(train, val, model, i)  # Train the model
         models.append(trained_model)  # Store the trained model
 
-    y_hat_oos, mse = evaluate_ensemble(models, oos, y_oos)
+    print('\nEvaluating ensemble predictions. . .')
+    y_hat_oos = evaluate_ensemble(models, oos, y_oos)
+
+    mse = mean_squared_error(y_hat_oos, y_oos)
+    print(f'MSE : {mse}')
 
 def data_to_tensors(X_train, y_train, X_val, y_val, X_oos, y_oos):
     train_data = tf.data.Dataset.from_tensor_slices((X_train, y_train)).batch(256).prefetch(tf.data.experimental.AUTOTUNE)
@@ -40,7 +45,8 @@ def data_to_tensors(X_train, y_train, X_val, y_val, X_oos, y_oos):
     oos_data = tf.data.Dataset.from_tensor_slices((X_oos, y_oos)).batch(256).prefetch(tf.data.experimental.AUTOTUNE)
     return train_data, val_data, oos_data
 
-def evaluate_ensemble(models, oos_data, y_oos):
+def evaluate_ensemble(models: list, oos_data, y_oos: np.array) -> np.ndarray:
+
     # Collect predictions from all models
     predictions = []
     
@@ -52,11 +58,7 @@ def evaluate_ensemble(models, oos_data, y_oos):
     # Calculate ensemble mean prediction
     y_hat_oos = np.mean(predictions, axis=0)  # Average across models
     
-    # Compute and print MSE
-    mse = mean_squared_error(y_oos, y_hat_oos)
-    print(f"Out-of-sample MSE: {mse:.4f}")
-    
-    return y_hat_oos, mse
+    return y_hat_oos
 
 def build_models(X):
     model = Sequential([
