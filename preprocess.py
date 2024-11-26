@@ -1,6 +1,6 @@
 import pandas as pd
 import torch
-from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import mean_squared_error
 import pickle as pkl
 import tensorflow as tf
@@ -39,7 +39,7 @@ def preprocess_data():
     print('Normalisation of vals. . .\n')
     # Normalize features
     or_cols = imputed_df.columns
-    scaler = MinMaxScaler()
+    scaler = StandardScaler()
     temp_transformed_df = scaler.fit_transform(imputed_df)
     transformed_df = pd.DataFrame(temp_transformed_df, index=imputed_df.index, columns=or_cols)
     del temp_transformed_df, imputed_df

@@ -62,6 +62,19 @@ def imputed_df_to_data(df):
 
     return X_arr, y
 
+def replace_NaNs(X: np.array):
+    for i in range(X.shape[0]):
+        for j in range(X.shape[1]):
+            for k in range(X.shape[2]):
+                # Replace NaNs
+                if np.isnan(X[i,j,k]):
+                    if i == 0:
+                        X[i,j,k] = 0
+                    else:
+                        X[i,j,k] = X[i-1,j,k]
+
+    return X
+
 def impute_permno(df):
     """Imputes missing values within each permno group using the median.
 

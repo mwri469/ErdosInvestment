@@ -19,16 +19,10 @@ from preprocess import *
 def main():
     (X_train, y_train, X_val, y_val, X_oos, y_oos), scaler = preprocess_data()
 
-    model = build_models(X_train)
+    # Replace NaN values in X's
+    X_train, X_val, X_oos = map(replace_NaNs, (X_train, X_val, X_oos))
 
     train, val, oos = data_to_tensors(X_train, y_train, X_val, y_val, X_oos, y_oos)
-
-    built_model = build_models(X_train)
-
-    print('For future reference : \n')
-    print(f'\tType model : {type(built_model)}\n')
-    print(f'\tType train/val/oos datasets : {type(train)}\n')
-    print(f'\tType preprocessed X_... : {type(X_val)}\n')
 
     models = []
     
@@ -38,17 +32,37 @@ def main():
         trained_model, _ = train_model(train, val, model, i)  # Train the model
         models.append(trained_model)  # Store the trained model
 
+    y_hat_oos, mse = evaluate_ensemble(models, oos, y_oos)
+
 def data_to_tensors(X_train, y_train, X_val, y_val, X_oos, y_oos):
     train_data = tf.data.Dataset.from_tensor_slices((X_train, y_train)).batch(256).prefetch(tf.data.experimental.AUTOTUNE)
     val_data = tf.data.Dataset.from_tensor_slices((X_val, y_val)).batch(256).prefetch(tf.data.experimental.AUTOTUNE)
-    oos_data = tf.data.Dataset.from_tensor_slices((X_oos, y_oos)).batch(256).prefetch(tf.data.bexperimental.AUTOTUNE)
+    oos_data = tf.data.Dataset.from_tensor_slices((X_oos, y_oos)).batch(256).prefetch(tf.data.experimental.AUTOTUNE)
     return train_data, val_data, oos_data
+
+def evaluate_ensemble(models, oos_data, y_oos):
+    # Collect predictions from all models
+    predictions = []
+    
+    for model in models:
+        # Predict on out-of-sample data
+        preds = model.predict(oos_data, verbose=0)
+        predictions.append(preds)
+
+    # Calculate ensemble mean prediction
+    y_hat_oos = np.mean(predictions, axis=0)  # Average across models
+    
+    # Compute and print MSE
+    mse = mean_squared_error(y_oos, y_hat_oos)
+    print(f"Out-of-sample MSE: {mse:.4f}")
+    
+    return y_hat_oos, mse
 
 def build_models(X):
     model = Sequential([
-        Input((PAST, X.shape[2])),
-        LSTM(32),
-        LSTM(16),
+        # Input(),
+        LSTM(32, input_shape=(PAST, X.shape[2]), return_sequences=True),
+        LSTM(16, return_sequences=True),
         LSTM(8),
         Dense(FUTURE)
     ])
