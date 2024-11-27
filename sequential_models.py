@@ -17,36 +17,36 @@ from lstm_pipe import *
 from globals import *
 from preprocess import *
 
-def build_simple_model():
+def build_simple_model(X):
     model = Sequential([
-        LSTM(16, return_sequences=True, input_shape=(PAST, FUTURE)),
+        LSTM(16, return_sequences=True, input_shape=(PAST, X.shape[2])),
         LSTM(8),
         Dense(FUTURE)
     ])
     return model
 
-def build_medium_model():
+def build_medium_model(X):
     model = Sequential([
-        LSTM(32, return_sequences=True, input_shape=(PAST, FUTURE)),
+        LSTM(32, return_sequences=True, input_shape=(PAST, X.shape[2])),
         LSTM(16, return_sequences=True),
         LSTM(8),
         Dense(FUTURE)
     ])
     return model
 
-def build_complex_model():
+def build_complex_model(X):
     model = Sequential([
-        LSTM(64, return_sequences=True, input_shape=(PAST, FUTURE)),
+        LSTM(64, return_sequences=True, input_shape=(PAST, X.shape[2])),
         LSTM(32, return_sequences=True),
         LSTM(16),
         Dense(FUTURE)
     ])
     return model
 
-def light_dropout():
+def light_dropout(X):
     dropout = 0.1
     model = Sequential([
-        LSTM(64, return_sequences=True, input_shape=(PAST, FUTURE)),
+        LSTM(64, return_sequences=True, input_shape=(PAST, X.shape[2])),
         Dropout(dropout),
         LSTM(32, return_sequences=True),
         Dropout(dropout),
@@ -56,10 +56,10 @@ def light_dropout():
     ])
     return model
 
-def heavy_dropout():
+def heavy_dropout(X):
     dropout = 0.3
     model = Sequential([
-        LSTM(64, return_sequences=True, input_shape=(PAST, FUTURE)),
+        LSTM(64, return_sequences=True, input_shape=(PAST, X.shape[2])),
         Dropout(dropout),
         LSTM(32, return_sequences=True),
         Dropout(dropout),
@@ -69,9 +69,9 @@ def heavy_dropout():
     ])
     return model
 
-def complex_bidirectional():
+def complex_bidirectional(X):
     model = Sequential([
-        Bidirectional(LSTM(128, return_sequences=True, input_shape=(PAST, FUTURE))),
+        Bidirectional(LSTM(128, return_sequences=True, input_shape=(PAST, X.shape[2]))),
         Bidirectional(LSTM(64, return_sequences=True)),
         Bidirectional(LSTM(32, return_sequences=True)),
         Bidirectional(LSTM(16)),

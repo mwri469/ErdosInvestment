@@ -9,7 +9,7 @@ from globals import *
 
 def preprocess_data():
     # Load the dataset
-    print('Loading datasets. . .\n')
+    print('\nLoading datasets. . .')
     df = load_data()
     # with open('../pyanomaly-master/output/merge.pickle','rb') as f:
     #     obj = pkl.load(f)
@@ -36,7 +36,7 @@ def preprocess_data():
     imputed_df = impute_permno(dropped_df)
     del dropped_df
 
-    print('Normalisation of vals. . .\n')
+    print('\nNormalisation of vals. . .')
     # Normalize features
     or_cols = imputed_df.columns
     scaler = StandardScaler()
@@ -57,13 +57,13 @@ def preprocess_data():
     del df
 
     # Convert to appropriate format for converting to tensors
-    print('Processing training df. . .\n')
+    print('\nProcessing training df. . .')
     X_train, y_train = imputed_df_to_data(train_df)
 
-    print('Processing validation df. . .\n')
+    print('\nProcessing validation df. . .')
     X_val, y_val = imputed_df_to_data(val_df)
 
-    print('Processing OOS testing df. . .\n')
+    print('\nProcessing OOS testing df. . .')
     X_oos, y_oos = imputed_df_to_data(test_df)
     
     # Return tensor and scaler for potential use in inverse transformation

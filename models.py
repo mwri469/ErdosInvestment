@@ -37,14 +37,14 @@ def main():
     # Train multiple models and collect 
     print('\nTraining models in ensemble. . .')
     pipeline = model_pipeline()
-    pipeline.train_ensemble(train, val)
+    pipeline.train_ensemble(train, val, X)
     pipeline.save_models()
 
     print('\nEvaluating ensemble predictions. . .')
     y_hat_oos = evaluate_ensemble(models, oos)
 
     mse = mean_squared_error(y_hat_oos, y_oos)
-    print(f'MSE : {mse}')
+    print(f'\nMSE : {mse}')
 
 class model_pipeline:
     def __init__(self, config=None):
@@ -69,7 +69,7 @@ class model_pipeline:
         model.compile(optimizer=optimizer, loss='mse')
         return model
 
-    def train_ensemble(self, train, val):
+    def train_ensemble(self, train, val, X):
         """
         Trains multiple models with varying hyperparameters and stores them.
         """
@@ -79,7 +79,7 @@ class model_pipeline:
             epochs = random.randint(10, 50)  # Random number of epochs
             model_choice = random.choice(self.config['Model choices'])
             
-            model = model_choice()  # Randomly select a model architecture
+            model = model_choice(X)  # Randomly select a model architecture
             model = self.compile_model(model, learning_rate)
             trained_model, _ = train_model(train, val, model, i, epochs)
             self.models.append(trained_model)
