@@ -23,7 +23,7 @@ def main():
 
     try:
         with open('data/datasets.pickle', 'wb') as f:
-            pkl.dumps((X_train, y_train, X_val, y_val, X_oos, y_oos), f)
+            pkl.dump((X_train, y_train, X_val, y_val, X_oos, y_oos), f)
     except:
         pass
     
@@ -37,7 +37,7 @@ def main():
     # Train multiple models and collect 
     print('\nTraining models in ensemble. . .')
     pipeline = model_pipeline()
-    pipeline.train_ensemble(train, val, X)
+    pipeline.train_ensemble(train, val, X_val)
     pipeline.save_models()
 
     print('\nEvaluating ensemble predictions. . .')
