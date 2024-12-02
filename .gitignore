@@ -2,3 +2,5 @@ preprocess_notebook.ipynb
 preprocess_notebook.ipynb
 model_weights
 data
+__pycache__
+input

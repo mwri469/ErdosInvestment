@@ -19,14 +19,26 @@ from preprocess import *
 from sequential_models import *
 
 def main():
-    (X_train, y_train, X_val, y_val, X_oos, y_oos), scaler = preprocess_data()
+    get_data = False
+    if get_data:
+        (X_train, y_train, X_val, y_val, X_oos, y_oos), scaler = preprocess_data()
 
-    try:
-        with open('data/datasets.pickle', 'wb') as f:
-            pkl.dump((X_train, y_train, X_val, y_val, X_oos, y_oos), f)
-    except:
-        pass
-    
+        try:
+            with open('data/datasets.pickle', 'wb') as f:
+                pkl.dump((X_train, y_train, X_val, y_val, X_oos, y_oos), f)
+        except:
+            pass
+    else:
+        try:
+            print('Loading datasets from data/datasets.pickle')
+            with open('data/datasets.pickle', 'rb') as f:
+                obj = pkl.load(f)
+            
+            (X_train, y_train, X_val, y_val, X_oos, y_oos) = obj
+        except:
+            print('Failed to open datasets.pickle')
+            return -1
+        
     # Replace NaN values in X's
     X_train, X_val, X_oos = map(replace_NaNs, (X_train, X_val, X_oos))
 
@@ -41,7 +53,8 @@ def main():
     pipeline.save_models()
 
     print('\nEvaluating ensemble predictions. . .')
-    y_hat_oos = evaluate_ensemble(models, oos)
+    y_hat_oos = evaluate_ensemble(pipeline.models, oos)
+    print(y_hat_oos)
 
     mse = mean_squared_error(y_hat_oos, y_oos)
     print(f'\nMSE : {mse}')
@@ -54,7 +67,7 @@ class model_pipeline:
         else:
             print('\nUsing default configuration. . .')
             self.config = {
-                'Num models': NUM_MODELS,
+                'Num models': 20,
                 'Optimizer': keras.optimizers.Adam,
                 'Model choices': [build_simple_model, build_medium_model, build_complex_model, light_dropout,
                                   heavy_dropout, complex_bidirectional]

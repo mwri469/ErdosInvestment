@@ -1,0 +1,140 @@
+[2024/11/30 12:31] Timer On: Example 1
+[2024/11/30 12:31] ################################################################################
+[2024/11/30 12:31] DOWNLOADING DATA
+[2024/11/30 12:31] ################################################################################
+[2024/11/30 12:31] Elapsed [0:00:04.931, 4.931]: Asynchronous download: funda
+[2024/11/30 12:31] Elapsed [0:00:41.157, 36.226]: Download complete: funda
+[2024/11/30 12:31] Elapsed [0:00:41.226, 0.069]: Asynchronous download: fundq
+[2024/11/30 12:33] Elapsed [0:02:01.158, 79.932]: Download complete: fundq
+[2024/11/30 12:33] Elapsed [0:02:01.299, 0.141]: Downloading comp.exrt_dly...
+[2024/11/30 12:34] Elapsed [0:03:03.437, 62.138]: Download complete. Size: (2130585, 5)
+[2024/11/30 12:34] Elapsed [0:03:03.644, 0.206]: Asynchronous download: msf
+[2024/11/30 12:35] Elapsed [0:04:28.018, 84.374]: Download complete: msf
+[2024/11/30 12:35] Elapsed [0:04:28.144, 0.126]: Asynchronous download: dsf
+[2024/11/30 12:47] Elapsed [0:16:11.413, 703.269]: Download complete: dsf
+[2024/11/30 12:47] Elapsed [0:16:11.556, 0.143]: Asynchronous download: mseall
+[2024/11/30 12:47] Elapsed [0:16:21.090, 9.534]: Download complete: mseall
+[2024/11/30 12:47] Elapsed [0:16:21.092, 0.002]: Asynchronous download: dseall
+[2024/11/30 12:47] Elapsed [0:16:32.015, 10.923]: Download complete: dseall
+[2024/11/30 12:47] Elapsed [0:16:32.017, 0.002]: Downloading crsp.mcti...
+[2024/11/30 12:47] Elapsed [0:16:32.951, 0.935]: Download complete. Size: (1177, 21)
+[2024/11/30 12:47] Elapsed [0:16:32.952, 0.001]: Downloading ff.factors_monthly...
+[2024/11/30 12:47] Elapsed [0:16:33.626, 0.674]: Download complete. Size: (1179, 9)
+[2024/11/30 12:47] Elapsed [0:16:33.627, 0.001]: Downloading ff.factors_daily...
+[2024/11/30 12:47] Elapsed [0:16:35.335, 1.708]: Download complete. Size: (25837, 6)
+[2024/11/30 12:47] Elapsed [0:16:35.336, 0.001]: Downloading crsp.ccmxpf_linktable...
+[2024/11/30 12:47] Elapsed [0:16:39.654, 4.318]: Download complete. Size: (87504, 9)
+[2024/11/30 12:47] Elapsed [0:16:39.662, 0.009]: Merging msf with mseall...
+[2024/11/30 12:47] msf shape: (657382, 23), delistm shape: (3057, 6)
+[2024/11/30 12:47] Missing dlret: 47
+[2024/11/30 12:47] Missing dlret after filling: 9
+[2024/11/30 12:47] Elapsed [0:16:40.276, 0.614]: msf and mseall merged. msf shape: (657382, 25)
+[2024/11/30 12:47] Elapsed [0:16:40.298, 0.022]: Adding gvkey to crsp...
+[2024/11/30 12:47] Elapsed [0:16:41.718, 1.419]: gvkey added to crsp: crsp shape: (657382, 27), missing gvkey: 96762
+[2024/11/30 12:47] No. unique permnos: 9529, no. unique gvkeys: 7959
+[2024/11/30 12:47] Elapsed [0:16:42.371, 0.654]: Merging dsf with dseall...
+[2024/11/30 12:47] dsf shape: (13696429, 11), delistd shape: (3069, 6)
+[2024/11/30 12:47] Missing dlret: 750
+[2024/11/30 12:47] Missing dlret after filling: 80
+[2024/11/30 12:47] Elapsed [0:16:43.950, 1.579]: dsf and dseall merged. dsf shape: (13696429, 12)
+[2024/11/30 12:47] Elapsed [0:16:43.995, 0.045]: Adding gvkey to crsp...
+[2024/11/30 12:48] Elapsed [0:17:16.777, 32.782]: gvkey added to crsp: crsp shape: (13696429, 14), missing gvkey: 1924094
+[2024/11/30 12:48] No. unique permnos: 9500, no. unique gvkeys: 7967
+[2024/11/30 12:48] ################################################################################
+[2024/11/30 12:48] FACTOR PORTFOLIOS
+[2024/11/30 12:48] ################################################################################
+[2024/11/30 12:48] Elapsed [0:17:21.852, 5.075]: Generating data for factor portfolios...
+[2024/11/30 12:48] Elapsed [0:17:21.853, 0.000]: Loading crspm...
+[2024/11/30 12:48] Elapsed [0:17:22.246, 0.393]: crspm loaded.
+[2024/11/30 12:48] Shape: (657382, 27)
+[2024/11/30 12:48] No. unique dates: 120, Date range: 1975-01-31 00:00:00 - 1984-12-31 00:00:00
+[2024/11/30 12:48] No. unique ids: 9529
+[2024/11/30 12:48] Elapsed [0:17:22.303, 0.057]: Filtering crspm...
+[2024/11/30 12:48] crspm shape before filtering: (657382, 27)
+[2024/11/30 12:48] filter: shrcd in [10, 11, 12]
+[2024/11/30 12:48] crspm shape after filtering: (620357, 27)
+[2024/11/30 12:48] Elapsed [0:17:22.541, 0.239]: crspm filtered.
+[2024/11/30 12:48] Elapsed [0:17:22.542, 0.001]: Populating data...
+[2024/11/30 12:48] Elapsed [0:17:24.732, 2.190]: Data populated.
+[2024/11/30 12:48] Elapsed [0:17:24.733, 0.001]: Updating crspm variables...
+[2024/11/30 12:48] Elapsed [0:17:25.089, 0.356]: crspm variables updated.
+[2024/11/30 12:48] Elapsed [0:17:25.091, 0.002]: Loading fundq...
+[2024/11/30 12:48] Elapsed [0:17:25.269, 0.178]: fundq loaded.
+[2024/11/30 12:48] Shape: (175333, 128)
+[2024/11/30 12:48] No. unique dates: 120, Date range: 1975-01-31 00:00:00 - 1984-12-31 00:00:00
+[2024/11/30 12:48] No. unique ids: 9039
+[2024/11/30 12:48] Elapsed [0:17:25.300, 0.030]: Removing duplicates in fundq...
+[2024/11/30 12:48] fundq shape before duplicate removal: (175333, 128), duplicates: 99
+[2024/11/30 12:48] Elapsed [0:17:25.794, 0.495]: Duplicates removed.
+[2024/11/30 12:48] fundq shape after duplicate removal: (175234, 128), duplicates: 0
+[2024/11/30 12:48] Elapsed [0:17:25.827, 0.033]: Converting non USD items to USD...
+[2024/11/30 12:48] Elapsed [0:17:25.844, 0.017]: Currency converted.
+[2024/11/30 12:48] Elapsed [0:17:25.845, 0.001]: Populating data...
+[2024/11/30 12:48] Elapsed [0:17:27.580, 1.736]: Data populated.
+[2024/11/30 12:48] Elapsed [0:17:27.581, 0.001]: Creating quarterly items from ytd items...
+[2024/11/30 12:48] Elapsed [0:17:28.369, 0.788]: Quarterly items created from ytd items.
+[2024/11/30 12:48] Elapsed [0:17:28.393, 0.024]: Updating fundq variables...
+[2024/11/30 12:48] Elapsed [0:17:29.010, 0.616]: fundq variables updated.
+[2024/11/30 12:48] Elapsed [0:17:29.022, 0.012]: [niq_be (niq_be)] created.
+[2024/11/30 12:48] Elapsed [0:17:29.023, 0.001]: Loading funda...
+[2024/11/30 12:48] Elapsed [0:17:29.104, 0.082]: funda loaded.
+[2024/11/30 12:48] Shape: (71548, 102)
+[2024/11/30 12:48] No. unique dates: 120, Date range: 1975-01-31 00:00:00 - 1984-12-31 00:00:00
+[2024/11/30 12:48] No. unique ids: 11090
+[2024/11/30 12:48] Elapsed [0:17:29.119, 0.015]: Converting non USD items to USD...
+[2024/11/30 12:48] Elapsed [0:17:31.292, 2.172]: Currency converted.
+[2024/11/30 12:48] Elapsed [0:17:31.293, 0.001]: Populating data...
+[2024/11/30 12:48] Elapsed [0:17:33.315, 2.022]: Data populated.
+[2024/11/30 12:48] Elapsed [0:17:33.316, 0.001]: Merging funda with fundq...
+[2024/11/30 12:48] Elapsed [0:17:33.317, 0.001]: Generating funda variables from fundq...
+[2024/11/30 12:48] Elapsed [0:17:37.985, 4.668]: funda variables generated.
+[2024/11/30 12:48] Elapsed [0:17:44.773, 6.788]: funda and fundq merged.
+[2024/11/30 12:48] Elapsed [0:17:44.818, 0.045]: updating funda variables...
+[2024/11/30 12:48] Elapsed [0:17:48.905, 4.086]: funda variables updated.
+[2024/11/30 12:48] Elapsed [0:17:48.907, 0.003]: Adding crspm me to funda...
+[2024/11/30 12:48] Elapsed [0:17:50.170, 1.262]: crspm me added to funda. funda shape: (799417, 114)
+[2024/11/30 12:48] Elapsed [0:17:50.195, 0.026]: [be_me (be_me)] created.
+[2024/11/30 12:48] Elapsed [0:17:50.214, 0.019]: [ope_be (ope_be)] created.
+[2024/11/30 12:48] Elapsed [0:17:50.234, 0.020]: [at_gr1 (at_gr1)] created.
+[2024/11/30 12:48] Elapsed [0:17:50.235, 0.001]: Preprocessing Merge...
+[2024/11/30 12:48] Elapsed [0:17:50.358, 0.123]: [o_score (o_score)] created.
+[2024/11/30 12:48] Elapsed [0:17:50.373, 0.015]: [gp_at (gp_at)] created.
+[2024/11/30 12:48] Elapsed [0:17:50.388, 0.015]: [niq_at (niq_at)] created.
+[2024/11/30 12:48] Elapsed [0:17:53.079, 2.691]: [ret_12_1 (ret_12_1)] created.
+[2024/11/30 12:48] Elapsed [0:17:53.093, 0.013]: [oaccruals_at (oaccruals_at)] created.
+[2024/11/30 12:48] Elapsed [0:17:53.147, 0.054]: [noa_at (noa_at)] created.
+[2024/11/30 12:48] Elapsed [0:17:53.177, 0.030]: [ppeinv_gr1a (ppeinv_gr1a)] created.
+[2024/11/30 12:48] Elapsed [0:17:53.198, 0.021]: [chcsho_12m (chcsho_12m)] created.
+[2024/11/30 12:48] Elapsed [0:17:53.264, 0.066]: [eqnpo_12m (eqnpo_12m)] created.
+[2024/11/30 12:48] Elapsed [0:17:55.996, 2.732]: Merge preprocessed.
+[2024/11/30 12:49] Elapsed [0:18:02.093, 6.097]: [mispricing_mgmt (mispricing_mgmt)] created.
+[2024/11/30 12:49] Elapsed [0:18:02.242, 0.149]: [mispricing_perf (mispricing_perf)] created.
+[2024/11/30 12:49] Elapsed [0:18:03.142, 0.900]: Loading crspd...
+[2024/11/30 12:49] Elapsed [0:18:04.366, 1.224]: crspd loaded.
+[2024/11/30 12:49] Shape: (13696429, 14)
+[2024/11/30 12:49] No. unique dates: 2528, Date range: 1975-01-02 00:00:00 - 1984-12-31 00:00:00
+[2024/11/30 12:49] No. unique ids: 9500
+[2024/11/30 12:49] Elapsed [0:18:05.299, 0.933]: Filtering crspd...
+[2024/11/30 12:49] crspd shape before filtering: (13696429, 14)
+[2024/11/30 12:49] filter: shrcd in [10, 11, 12]
+[2024/11/30 12:49] crspd shape after filtering: (13005045, 14)
+[2024/11/30 12:49] Elapsed [0:18:06.617, 1.318]: crspd filtered.
+[2024/11/30 12:49] Elapsed [0:18:06.618, 0.001]: Updating crspd variables...
+[2024/11/30 12:49] Elapsed [0:18:19.894, 13.276]: crspd variables updated.
+[2024/11/30 12:49] Daily data generated.
+[2024/11/30 12:49] Monthly data generated.
+[2024/11/30 12:49] Elapsed [0:18:26.128, 6.234]: Making factor portfolios monthly...
+[2024/11/30 12:49] Elapsed [0:18:30.351, 4.223]: Factor portfolio created: be_me
+[2024/11/30 12:49] Elapsed [0:18:30.494, 0.143]: Factor portfolio created: ope_be
+[2024/11/30 12:49] Elapsed [0:18:30.630, 0.136]: Factor portfolio created: at_gr1
+[2024/11/30 12:49] Elapsed [0:18:30.770, 0.140]: Factor portfolio created: at_gr1
+[2024/11/30 12:49] Elapsed [0:18:30.915, 0.145]: Factor portfolio created: niq_be
+[2024/11/30 12:49] Elapsed [0:18:31.053, 0.139]: Factor portfolio created: mispricing_mgmt
+[2024/11/30 12:49] Elapsed [0:18:31.191, 0.138]: Factor portfolio created: mispricing_perf
+[2024/11/30 12:51] Timer On: Example 1
+[2024/11/30 12:51] ################################################################################
+[2024/11/30 12:51] DOWNLOADING DATA
+[2024/11/30 12:51] ################################################################################
+[2024/11/30 12:51] Elapsed [0:00:04.538, 4.538]: Asynchronous download: funda
+[2024/11/30 12:51] Elapsed [0:00:34.365, 29.827]: Download complete: funda
+[2024/11/30 12:51] Elapsed [0:00:34.422, 0.057]: Asynchronous download: fundq

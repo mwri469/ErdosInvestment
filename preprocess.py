@@ -36,6 +36,8 @@ def preprocess_data():
     imputed_df = impute_permno(dropped_df)
     del dropped_df
 
+    imputed_df.to_pickle('data/imputed_df.pickle')
+
     print('\nNormalisation of vals. . .')
     # Normalize features
     or_cols = imputed_df.columns
@@ -59,12 +61,15 @@ def preprocess_data():
     # Convert to appropriate format for converting to tensors
     print('\nProcessing training df. . .')
     X_train, y_train = imputed_df_to_data(train_df)
+    del train_df
 
     print('\nProcessing validation df. . .')
     X_val, y_val = imputed_df_to_data(val_df)
+    del val_df
 
     print('\nProcessing OOS testing df. . .')
     X_oos, y_oos = imputed_df_to_data(test_df)
+    del test_df
     
     # Return tensor and scaler for potential use in inverse transformation
     return (X_train, y_train, X_val, y_val, X_oos, y_oos), scaler

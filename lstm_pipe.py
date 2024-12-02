@@ -10,7 +10,7 @@ def main():
 
     df = pd.DataFrame(obj)
 
-def imputed_df_to_data(df):
+def imputed_df_to_data(df: pd.DataFrame):
     """
     This function takes in the imputed pd.DataFrame and converts it to a more appropriate format
     for NN training.
@@ -75,7 +75,7 @@ def replace_NaNs(X: np.array):
 
     return X
 
-def impute_permno(df):
+def impute_permno(df: pd.DataFrame) -> pd.DataFrame:
     """Imputes missing values within each permno group using the median.
 
     Parameters:
@@ -109,7 +109,7 @@ def impute_permno(df):
     return df
 
 # Function to load the dataset and exclude unwanted columns
-def load_data():
+def load_data() -> pd.DataFrame:
     # Load the pickle file
     with open(FILE_PATH, 'rb') as f:
         obj = pkl.load(f)
@@ -119,7 +119,7 @@ def load_data():
     return df
 
 # Function to split the data into training, validation, and testing sets
-def split_data(df):
+def split_data(df: pd.DataFrame) -> pd.DataFrame:
     # Filter the DataFrame based on date ranges
     train_mask = (df.index.get_level_values('date') >= TRAINING_DATES[0]) & (df.index.get_level_values('date') < TRAINING_DATES[1])
     val_mask = (df.index.get_level_values('date') >= VALIDATION_DATES[0]) & (df.index.get_level_values('date') < VALIDATION_DATES[1])
@@ -131,6 +131,28 @@ def split_data(df):
     test_df = df[test_mask]
 
     return (train_df), (val_df), (test_df)
+
+def normalise_data(X: np.array) -> np.array:
+    """
+    Normalises the data in array to be between 0,1.
+    Uses a unique scaler for each feature.
+    Assumes X follows shape: (observations, days/months, num. features)
+    e.g [obs_0: [day_0: [feat_1,...,feat_n], ..., day_m:[feat_1,...,feat_n]], ...,
+        obs_p: [day_0: [feat_1,...,feat_n], ..., day_m:[feat_1,...,feat_n]]]
+    """
+    min_vals = np.empty(X.shape[2])
+    max_vals = min.copy()
+
+    for i in range(X.shape[0]):
+        for j in range(X.shape[1]):
+            for k in range(X.shape[2]):
+                # If current value is min/max for this feature, update appropriately
+                curr_val = X[i,j,k]
+                if min_vals[k] > curr_val:
+                    min_vals[k] = curr_val
+                if max_vals[k] < curr_val:
+                    max_vals[k] = curr_val
+    
 
 if __name__ == '__main__':
     main()

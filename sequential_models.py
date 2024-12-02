@@ -77,3 +77,4 @@ def complex_bidirectional(X):
         Bidirectional(LSTM(16)),
         Dense(FUTURE)
     ])
+    return model
