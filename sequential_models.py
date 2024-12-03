@@ -13,10 +13,6 @@ from keras.layers import LSTM, Dense, Bidirectional, Conv1D, MaxPooling1D, Dropo
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics import mean_squared_error
 
-from lstm_pipe import *
-from globals import *
-from preprocess import *
-
 def build_simple_model(X):
     model = Sequential([
         LSTM(16, return_sequences=True, input_shape=(PAST, X.shape[2])),
