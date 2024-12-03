@@ -10,9 +10,6 @@ import keras
 from keras import Sequential
 from keras.layers import LSTM, Dense, Bidirectional, Conv1D, MaxPooling1D, Dropout, BatchNormalization
 
-from sklearn.preprocessing import MinMaxScaler
-from sklearn.metrics import mean_squared_error
-
 def build_simple_model(X):
     model = Sequential([
         LSTM(16, return_sequences=True, input_shape=(PAST, X.shape[2])),
