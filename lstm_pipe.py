@@ -160,31 +160,41 @@ def impute_permno(df):
     return df
 
 @njit
-def impute_permno_numba(data, unique_permnos):
+def impute_permno_numba(data_flat, unique_permnos, n_cols):
     """
-    Numba-accelerated imputation function
+    Numba-accelerated imputation function for flattened data
     
     Parameters:
     -----------
-    data : numpy.ndarray
-        2D numpy array of data
+    data_flat : numpy.ndarray
+        1D flattened array of data
     unique_permnos : numpy.ndarray
         Array of unique permno IDs
+    n_cols : int
+        Number of columns in the original 2D array
     
     Returns:
     --------
     numpy.ndarray
         Imputed data array
     """
-    for permno in unique_permnos:
+    # Reshape the 1D array back to 2D
+    data = data_flat.reshape((-1, n_cols))
+    
+    for permno in tqdm(unique_permnos):
         # Create a mask for the current permno
         mask = data[:, 0] == permno
         
-        # Get data for current permno
+        # Get data for current permno (exclude the first column which is permno)
         permno_data = data[mask, 1:]
         
         # Compute column-wise median for current permno
-        col_medians = np.nanmedian(permno_data, axis=0)
+        col_medians = np.zeros(permno_data.shape[1])
+        for col in range(permno_data.shape[1]):
+            col_values = permno_data[:, col]
+            valid_values = col_values[~np.isnan(col_values)]
+            if len(valid_values) > 0:
+                col_medians[col] = np.median(valid_values)
         
         # Fill NaNs with computed medians
         for col in range(permno_data.shape[1]):
@@ -196,7 +206,61 @@ def impute_permno_numba(data, unique_permnos):
     
     return data
 
-def imputed_df_to_data_optimized(df, PAST=10, FUTURE=1):
+def impute_permno_optimised(df):
+    """
+    Optimized imputation function using a memory-efficient approach
+    
+    Parameters:
+    -----------
+    df : pandas.DataFrame
+        Input DataFrame to impute
+    
+    Returns:
+    --------
+    pandas.DataFrame
+        Imputed DataFrame
+    """
+    # Remove columns with high NaN percentage
+    print('Removing columns with a NaN % > 30. . .\n')
+    for col in tqdm(df.columns):
+        percent_NaN = df[col].isna().mean()
+        if percent_NaN > 0.3:
+            df.drop(col, axis=1, inplace=True)
+    
+    # Prepare data for Numba processing
+    unique_permnos = df.index.get_level_values('permno').unique().values
+    
+    # Convert to a memory-efficient format
+    # Create a flat array with permno as the first column
+    n_cols = len(df.columns) + 1  # +1 for permno
+    
+    # Preallocate a flat array
+    data_flat = np.zeros(len(df) * n_cols, dtype=np.float64)
+    
+    # Fill the flat array
+    for i, (index, row) in enumerate(df.iterrows()):
+        start = i * n_cols
+        data_flat[start] = index[1]  # permno
+        data_flat[start+1:start+n_cols] = row.values
+    
+    del df
+
+    # Process with Numba-accelerated function
+    imputed_flat = impute_permno_numba(data_flat, unique_permnos, n_cols)
+    
+    # Reconstruct DataFrame
+    imputed_df = pd.DataFrame(
+        imputed_flat[:, 1:], 
+        columns=df.columns, 
+        index=pd.MultiIndex.from_tuples(
+            [(idx[0], imputed_flat[i, 0]) for i, idx in enumerate(df.index)],
+            names=df.index.names
+        )
+    )
+    
+    return imputed_df
+
+def imputed_df_to_data_optimised(df, PAST=10, FUTURE=1):
     """
     Optimized conversion of imputed DataFrame to LSTM-ready format
     
@@ -236,44 +300,6 @@ def imputed_df_to_data_optimized(df, PAST=10, FUTURE=1):
     
     # Process with Numba-accelerated function
     return imputed_df_to_data_numba(features_np, exret_np, permno_ids_np, unique_permnos, PAST, FUTURE)
-
-def impute_permno_optimized(df):
-    """
-    Optimized imputation function using Numba
-    
-    Parameters:
-    -----------
-    df : pandas.DataFrame
-        Input DataFrame to impute
-    
-    Returns:
-    --------
-    pandas.DataFrame
-        Imputed DataFrame
-    """
-    # Remove columns with high NaN percentage
-    print('Removing columns with a NaN % > 30. . .\n')
-    for col in tqdm(df.columns):
-        percent_NaN = df[col].isna().mean()
-        if percent_NaN > 0.3:
-            df.drop(col, axis=1, inplace=True)
-    
-    # Prepare data for Numba processing
-    unique_permnos = df.index.get_level_values('permno').unique().values
-    
-    # Convert DataFrame to numpy for processing
-    data_array = df.reset_index().values
-    
-    # Process with Numba-accelerated function
-    print('\nImputing NaN values by permno id using median')
-    imputed_array = impute_permno_numba(data_array, unique_permnos)
-    
-    # Convert back to DataFrame
-    imputed_df = pd.DataFrame(imputed_array[:, 1:], 
-                               columns=df.columns, 
-                               index=df.index)
-    
-    return imputed_df
 
 # Function to load the dataset and exclude unwanted columns
 def load_data():
