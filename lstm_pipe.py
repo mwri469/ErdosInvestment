@@ -4,6 +4,7 @@ import pickle as pkl
 from tqdm import tqdm
 from globals import *
 from numba import njit, prange
+import time
 
 def main():
     with open(FILE_PATH, 'rb') as f:
@@ -11,61 +12,8 @@ def main():
 
     df = pd.DataFrame(obj)
 
-def imputed_df_to_data(df):
-    """
-    This function takes in the imputed pd.DataFrame and converts it to a more appropriate format
-    for NN training.
-    NOTE: PAST, FUTURE dates are configured in globals
-    ... keep at 1 if not going into LSTM
-
-    Parameters:
-    -----------
-    ... df      : pd.DataFrame
-    ...     -DataFrame with imputed values
-
-    Returns:
-    --------
-    ... X_arr   : np.array
-    ...     -numpy array of X values mapped at each index to a corresponding y-values
-    ... y       : np.array
-...         -numpy array of the corresponding y-values (exret)
-    """
-    # Get indexes
-    dates = df.index.get_level_values('date')
-    permno_ids = df.index.get_level_values('permno')
-
-    # Count unique permnos
-    count = 0
-    permno_set = set()
-    for p in permno_ids.to_list():
-        if p not in permno_set:
-            count += 1
-            permno_set.add(p)
-
-    exclude_columns = ["gvkey", "datadate", "primary", "exchcd", "ret", "exret", "me"]
-    exret = df.exret
-    features = df.drop(columns=exclude_columns)
-
-    # Build data for lstm
-    placeholder_X_list = np.empty(features[:PAST].shape)
-    placeholder_y_list = np.empty(exret[PAST:PAST+FUTURE].shape)
-    X_arr = np.array([placeholder_X_list for _ in range(len(permno_set))])
-    y=np.array([placeholder_y_list for _ in range(len(permno_set))])
-
-    for j in tqdm(range(len(permno_set))):
-        p = permno_set.pop()
-        idxs = [idx for idx, val in enumerate(permno_ids) if val == p]
-        temp_df = features.iloc[idxs].to_numpy()
-        temp_exret = exret.iloc[idxs].to_numpy()
-        
-        for i in range(len(temp_df) - PAST - FUTURE + 1):
-            X_arr[j] = temp_df[i:i+PAST].copy()
-            y[j] = temp_exret[i+PAST:i+PAST+FUTURE].copy()
-
-    return X_arr, y
-
 @njit(parallel=True)
-def imputed_df_to_data_numba(features_np, exret_np, permno_ids, unique_permnos, PAST, FUTURE):
+def imputed_df_to_data_numba(features_np: np.ndarray, exret_np: np.ndarray, permno_ids: np.ndarray, unique_permnos: np.ndarray, PAST: int, FUTURE: int) -> np.ndarray:
     """
     Numba-accelerated version of imputed_df_to_data
     
@@ -80,7 +28,7 @@ def imputed_df_to_data_numba(features_np, exret_np, permno_ids, unique_permnos, 
     unique_permnos : np.ndarray
         Array of unique permno IDs
     PAST : int
-        Number of past timesteps
+        Number of past timesteps to include in each observation
     FUTURE : int
         Number of future timesteps
     
@@ -113,54 +61,8 @@ def imputed_df_to_data_numba(features_np, exret_np, permno_ids, unique_permnos, 
     
     return X_arr, y
 
-def replace_NaNs(X: np.array):
-    for i in range(X.shape[0]):
-        for j in range(X.shape[1]):
-            for k in range(X.shape[2]):
-                # Replace NaNs
-                if np.isnan(X[i,j,k]):
-                    if i == 0:
-                        X[i,j,k] = 0
-                    else:
-                        X[i,j,k] = X[i-1,j,k]
-
-    return X
-
-def impute_permno(df):
-    """Imputes missing values within each permno group using the median.
-
-    Parameters:
-    -----------
-    df: A Pandas DataFrame with a MultiIndex.
-
-    Returns:
-    --------
-    df_imputed: A DataFrame with imputed values.
-    """
-    print('USING NEW IMPUTE METHOD')
-
-    # Remove columns with high NaN percentage
-    print('Removing columns with a NaN % > 30. . .\n')
-    for col in tqdm(df.columns):
-        percent_NaN = df[col].isna().mean()
-        if percent_NaN > 0.3:
-            # print(f'\n Deleting column {col} with NaN: {percent_NaN}%. . .\n')
-            df.drop(col, axis=1, inplace=True)
-
-    print('Imputing median for each permno. . .\n')
-    # Get unique permno IDs
-    permno_ids = df.index.get_level_values('permno').unique()
-
-    # Iterate over permno IDs and impute missing values
-    for permno in tqdm(permno_ids):
-        df.loc[df.index.get_level_values('permno') == permno] = df.loc[
-            df.index.get_level_values('permno') == permno
-        ].fillna(df.loc[df.index.get_level_values('permno') == permno].median())
-
-    return df
-
-@njit
-def impute_permno_numba(data_flat, unique_permnos, n_cols):
+@njit()
+def impute_permno_numba(data_flat: np.ndarray, unique_permnos: np.ndarray, n_cols: int) -> np.ndarray:
     """
     Numba-accelerated imputation function for flattened data
     
@@ -181,8 +83,9 @@ def impute_permno_numba(data_flat, unique_permnos, n_cols):
     # Reshape the 1D array back to 2D
     data = data_flat.reshape((-1, n_cols))
     
-    for permno in tqdm(unique_permnos):
+    for idx in range(len(unique_permnos)):
         # Create a mask for the current permno
+        permno = unique_permnos[idx]
         mask = data[:, 0] == permno
         
         # Get data for current permno (exclude the first column which is permno)
@@ -222,13 +125,14 @@ def impute_permno_optimised(df):
     """
     # Remove columns with high NaN percentage
     print('Removing columns with a NaN % > 30. . .\n')
-    for col in tqdm(df.columns):
-        percent_NaN = df[col].isna().mean()
-        if percent_NaN > 0.3:
-            df.drop(col, axis=1, inplace=True)
+    # for col in tqdm(df.columns):
+    #     percent_NaN = df[col].isna().mean()
+    #     if percent_NaN > 0.3:
+    #         df.drop(col, axis=1, inplace=True)
     
+    print('\nColumns Removed, preparing data for optimised df imputation. . .')
     # Prepare data for Numba processing
-    unique_permnos = df.index.get_level_values('permno').unique().values
+    unique_permnos = df.index.get_level_values('permno').unique().values.to_numpy()
     
     # Convert to a memory-efficient format
     # Create a flat array with permno as the first column
@@ -237,30 +141,38 @@ def impute_permno_optimised(df):
     # Preallocate a flat array
     data_flat = np.zeros(len(df) * n_cols, dtype=np.float64)
     
+    print('\nFilling flat array')
     # Fill the flat array
-    for i, (index, row) in enumerate(df.iterrows()):
+    for i, (index, row) in tqdm(enumerate(df.iterrows())):
         start = i * n_cols
         data_flat[start] = index[1]  # permno
-        data_flat[start+1:start+n_cols] = row.values
-    
+        data_flat[start+1:start+n_cols] = row.to_numpy()
+    df_cols = df.columns
+    df_names = df.index.names
+    df_index = df.index
     del df
 
+    print('\nBegin imputing data. . .')
+    start = time.perf_counter()
     # Process with Numba-accelerated function
     imputed_flat = impute_permno_numba(data_flat, unique_permnos, n_cols)
+    # Count elapsed time
+    elapsed = time.perf_counter()-start
+    print(f'Finished imputation in {elapsed}s')
     
     # Reconstruct DataFrame
     imputed_df = pd.DataFrame(
         imputed_flat[:, 1:], 
-        columns=df.columns, 
+        columns=df_cols, 
         index=pd.MultiIndex.from_tuples(
-            [(idx[0], imputed_flat[i, 0]) for i, idx in enumerate(df.index)],
-            names=df.index.names
+            [(idx[0], imputed_flat[i, 0]) for i, idx in enumerate(df_index)],
+            names=df_names
         )
     )
     
     return imputed_df
 
-def imputed_df_to_data_optimised(df, PAST=10, FUTURE=1):
+def imputed_df_to_data_optimised(df: pd.DataFrame, PAST: int=10, FUTURE: int=1) -> np.ndarray:
     """
     Optimized conversion of imputed DataFrame to LSTM-ready format
     
@@ -291,12 +203,13 @@ def imputed_df_to_data_optimised(df, PAST=10, FUTURE=1):
     permno_ids = df.index.get_level_values('permno')
     
     # Get unique permnos
-    unique_permnos = permno_ids.unique()
+    unique_permnos = permno_ids.unique().to_numpy()
     
     # Convert to numpy for Numba processing
     features_np = features.to_numpy()
     exret_np = exret.to_numpy()
     permno_ids_np = permno_ids.to_numpy()
+    del features, exret, permno_ids
     
     # Process with Numba-accelerated function
     return imputed_df_to_data_numba(features_np, exret_np, permno_ids_np, unique_permnos, PAST, FUTURE)
@@ -330,6 +243,105 @@ def split_data(df):
     test_df = df[test_mask]
 
     return (train_df), (val_df), (test_df)
+
+def replace_NaNs(X: np.ndarray) -> np.ndarray:
+    for i in range(X.shape[0]):
+        for j in range(X.shape[1]):
+            for k in range(X.shape[2]):
+                # Replace NaNs
+                if np.isnan(X[i,j,k]):
+                    if i == 0:
+                        X[i,j,k] = 0
+                    else:
+                        X[i,j,k] = X[i-1,j,k]
+
+    return X
+
+def imputed_df_to_data(df):
+    """
+    This function takes in the imputed pd.DataFrame and converts it to a more appropriate format
+    for NN training.
+    NOTE: PAST, FUTURE dates are configured in globals
+    ... keep at 1 if not going into LSTM
+
+    Parameters:
+    -----------
+    ... df      : pd.DataFrame
+    ...     -DataFrame with imputed values
+
+    Returns:
+    --------
+    ... X_arr   : np.array
+    ...     -numpy array of X values mapped at each index to a corresponding y-values
+    ... y       : np.array
+    ...      -numpy array of the corresponding y-values (exret)
+    """
+    # Get indexes
+    dates = df.index.get_level_values('date')
+    permno_ids = df.index.get_level_values('permno')
+
+    # Count unique permnos
+    count = 0
+    permno_set = set()
+    for p in permno_ids.to_list():
+        if p not in permno_set:
+            count += 1
+            permno_set.add(p)
+
+    exclude_columns = ["gvkey", "datadate", "primary", "exchcd", "ret", "exret", "me"]
+    exret = df.exret
+    features = df.drop(columns=exclude_columns)
+
+    # Build data for lstm
+    placeholder_X_list = np.empty(features[:PAST].shape)
+    placeholder_y_list = np.empty(exret[PAST:PAST+FUTURE].shape)
+    X_arr = np.array([placeholder_X_list for _ in range(len(permno_set))])
+    y=np.array([placeholder_y_list for _ in range(len(permno_set))])
+
+    for j in tqdm(range(len(permno_set))):
+        p = permno_set.pop()
+        idxs = [idx for idx, val in enumerate(permno_ids) if val == p]
+        temp_df = features.iloc[idxs].to_numpy()
+        temp_exret = exret.iloc[idxs].to_numpy()
+        
+        for i in range(len(temp_df) - PAST - FUTURE + 1):
+            X_arr[j] = temp_df[i:i+PAST].copy()
+            y[j] = temp_exret[i+PAST:i+PAST+FUTURE].copy()
+
+    return X_arr, y
+
+def impute_permno(df):
+    """Imputes missing values within each permno group using the median.
+
+    Parameters:
+    -----------
+    df: A Pandas DataFrame with a MultiIndex.
+
+    Returns:
+    --------
+    df_imputed: A DataFrame with imputed values.
+    """
+    print('USING NEW IMPUTE METHOD')
+
+    # Remove columns with high NaN percentage
+    print('Removing columns with a NaN % > 30. . .\n')
+    for col in tqdm(df.columns):
+        percent_NaN = df[col].isna().mean()
+        if percent_NaN > 0.3:
+            # print(f'\n Deleting column {col} with NaN: {percent_NaN}%. . .\n')
+            df.drop(col, axis=1, inplace=True)
+
+    print('Imputing median for each permno. . .\n')
+    # Get unique permno IDs
+    permno_ids = df.index.get_level_values('permno').unique()
+
+    # Iterate over permno IDs and impute missing values
+    for permno in tqdm(permno_ids):
+        df.loc[df.index.get_level_values('permno') == permno] = df.loc[
+            df.index.get_level_values('permno') == permno
+        ].fillna(df.loc[df.index.get_level_values('permno') == permno].median())
+
+    return df
 
 if __name__ == '__main__':
     main()
