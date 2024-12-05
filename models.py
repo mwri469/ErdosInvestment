@@ -18,8 +18,10 @@ from globals import *
 from preprocess import *
 from sequential_models import *
 
+#TODO: Convert to PyTorch
+
 def main():
-    get_data = False
+    get_data = True
     if get_data:
         (X_train, y_train, X_val, y_val, X_oos, y_oos), scaler = preprocess_data()
 
@@ -67,7 +69,7 @@ class model_pipeline:
         else:
             print('\nUsing default configuration. . .')
             self.config = {
-                'Num models': 20,
+                'Num models': 100,
                 'Optimizer': keras.optimizers.Adam,
                 'Model choices': [build_simple_model, build_medium_model, build_complex_model, light_dropout,
                                   heavy_dropout, complex_bidirectional]
