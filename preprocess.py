@@ -9,36 +9,24 @@ from globals import *
 
 def preprocess_data():
     # Load the dataset
-    print('\nLoading datasets. . .')
     df = load_data()
-    # with open('../pyanomaly-master/output/merge.pickle','rb') as f:
-    #     obj = pkl.load(f)
-
-    # df2 = pd.DataFrame(obj)
-
-    # df = pd.concat([df2,df], join='inner')
-    # del df2
-
-    print(df.info(verbose=True, show_counts=True))
     
     # Ensure 'date' and 'permno' are in the index
     if not isinstance(df.index, pd.MultiIndex): #or df.index.names not in set(['permno', 'date']):
         raise ValueError("Expected a MultiIndex DataFrame with 'permno' and 'date' as index levels.")
     
-    # pd.set_option('display.max_rows', 500)
-    # print(df.info(verbose=True, show_counts=True))
-    
     # Impute data, median of each permno group for NaN vals
     non_vals=["gvkey", "datadate", "primary"] #, "exchcd", "ret", "exret", "rf", "me"]
     non_vals_temp = df[non_vals]
     dropped_df = df.drop(non_vals,axis=1)
+    del df
     print('Imputation of NaN values. . .\n')
-    imputed_df = impute_permno(dropped_df)
+    imputed_df = impute_permno_optimised(dropped_df)
     del dropped_df
 
     imputed_df.to_pickle('data/imputed_df.pickle')
 
-    print('\nNormalisation of vals. . .')
+    print('Normalisation of vals. . .\n')
     # Normalize features
     or_cols = imputed_df.columns
     scaler = StandardScaler()
@@ -49,27 +37,32 @@ def preprocess_data():
     # Scaler converts to np.ndarray, so convert back to pandas.DF
     df = pd.concat([non_vals_temp, transformed_df], axis=1)
     del non_vals_temp, transformed_df
-
-    # with open('data/imputed_df.pickle', 'wb') as f:
-    #     pkl.dump(df, f)
     
     # Split data into training, validation and OOS testing sets
     # Date ranges for these sets are configured in globals.py
     train_df, val_df, test_df = split_data(df)
     del df
 
+    # Very messy code to come, had to make more memory efficient when calling functions by converting to np
+    # TODO: Clean up code here, work out efficiency gains
+    
     # Convert to appropriate format for converting to tensors
-    print('\nProcessing training df. . .')
-    X_train, y_train = imputed_df_to_data(train_df)
+    print('Processing training df. . .\n')
+    X_train, y_train = imputed_df_to_data_optimised(train_df)
     del train_df
+    # Ensure y has no NaN values
+    eps = 1e-3 # Error
+    assert np.isnan(y_train).sum() < eps
 
-    print('\nProcessing validation df. . .')
-    X_val, y_val = imputed_df_to_data(val_df)
+    print('Processing validation df. . .\n')
+    X_val, y_val = imputed_df_to_data_optimised(val_df)
     del val_df
+    assert np.isnan(y_val).sum() < eps
 
-    print('\nProcessing OOS testing df. . .')
-    X_oos, y_oos = imputed_df_to_data(test_df)
+    print('Processing OOS testing df. . .\n')
+    X_oos, y_oos = imputed_df_to_data_optimised(test_df)
     del test_df
+    assert np.isnan(y_oos).sum() < eps
     
     # Return tensor and scaler for potential use in inverse transformation
     return (X_train, y_train, X_val, y_val, X_oos, y_oos), scaler
