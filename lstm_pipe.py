@@ -1,4 +1,3 @@
-
 import numpy as np
 import pandas as pd
 import pickle as pkl
@@ -124,10 +123,10 @@ def impute_permno_optimised(df):
     
     return imputed_df
 
-@njit(parallel=True)
+@njit()
 def imputed_df_to_data_numba(features_np, exret_np, permno_ids, unique_permnos, PAST, FUTURE):
     """
-    Numba-accelerated version of imputed_df_to_data with memory-efficient allocation
+    Numba-accelerated version of imputed_df_to_data
     
     Parameters:
     -----------
@@ -151,25 +150,11 @@ def imputed_df_to_data_numba(features_np, exret_np, permno_ids, unique_permnos, 
     y : np.ndarray
         Target returns array
     """
-    # Determine the maximum possible size of the arrays
-    max_size = 0
-    for j in range(len(unique_permnos)):
-        permno = unique_permnos[j]
-        permno_mask = (permno_ids == permno)
-        temp_features = features_np[permno_mask]
-        temp_exret = exret_np[permno_mask]
-        
-        # Sliding window creation
-        if len(temp_features) >= PAST + FUTURE:
-            max_size += len(temp_features) - PAST - FUTURE + 1
+    X_arr = []
+    y = []
     
-    # Pre-allocate NumPy arrays with the maximum size
-    X_arr = np.empty((max_size, PAST, features_np.shape[1]), dtype=np.float32)
-    y = np.empty((max_size, FUTURE), dtype=np.float32)
-    
-    idx = 0  # Index to track where to insert new rows
     # Process each unique permno
-    for j in prange(len(unique_permnos)):
+    for j in range(len(unique_permnos)):
         permno = unique_permnos[j]
         
         # Find indices for current permno
@@ -178,15 +163,17 @@ def imputed_df_to_data_numba(features_np, exret_np, permno_ids, unique_permnos, 
         temp_exret = exret_np[permno_mask]
         
         # Sliding window creation
-        if len(temp_features) >= PAST + FUTURE:
-            for i in range(len(temp_features) - PAST - FUTURE + 1):
-                X_arr[idx] = temp_features[i:i+PAST]
-                y[idx] = temp_exret[i+PAST:i+PAST+FUTURE]
-                idx += 1
-    
-    return X_arr[:idx], y[:idx]
+        for i in range(len(temp_features) - PAST - FUTURE + 1):
+            X_arr.append(temp_features[i:i+PAST])
+            y.append(temp_exret[i+PAST:i+PAST+FUTURE])
 
-def imputed_df_to_data_optimised(df, PAST=10, FUTURE=1):
+    X_arr = np.array(X_arr)
+    y = np.array(y)
+    
+    return X_arr, y
+
+
+def imputed_df_to_data_optimised(df, PAST=3, FUTURE=1):
     """
     Optimized conversion of imputed DataFrame to LSTM-ready format
     
@@ -225,7 +212,7 @@ def imputed_df_to_data_optimised(df, PAST=10, FUTURE=1):
     exret_np = exret.to_numpy(dtype=np.float32)
     permno_ids_np = permno_ids.to_numpy(dtype=int)
     del features, exret
-    
+
     # Process with Numba-accelerated function
     return imputed_df_to_data_numba(features_np, exret_np, permno_ids_np, unique_permnos, PAST, FUTURE)
 
@@ -271,6 +258,10 @@ def replace_NaNs(X: np.ndarray) -> np.ndarray:
                         X[i,j,k] = X[i-1,j,k]
 
     return X
+
+# * =================================== *
+# *     Deprecated functions below      *
+# * =================================== *
 
 def imputed_df_to_data(df):
     """
