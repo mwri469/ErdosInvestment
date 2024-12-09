@@ -1,190 +1,186 @@
-import numpy as np
-import pandas as pd
-import pickle as pkl
-import torch
-from tqdm import tqdm
+import os
 import random
-
-import tensorflow as tf
-import keras
-from keras import Sequential
-from keras.layers import LSTM, Dense, Bidirectional, Conv1D, MaxPooling1D, Dropout, BatchNormalization
-
-from sklearn.preprocessing import MinMaxScaler
+import numpy as np
 from sklearn.metrics import mean_squared_error
+import pickle
 
-from lstm_pipe import *
-from globals import *
+import torch
+import torch.nn as nn
+import torch.optim as optim
+from torch.utils.data import DataLoader, TensorDataset
+
 from preprocess import *
 from sequential_models import *
 
-#TODO: Convert to PyTorch
 
 def main():
-    get_data = True
-    if get_data:
-        (X_train, y_train, X_val, y_val, X_oos, y_oos), scaler = preprocess_data()
+    # Placeholder preprocessing (replace with your actual data loading)
 
-        try:
-            with open('data/datasets.pickle', 'wb') as f:
-                pkl.dump((X_train, y_train, X_val, y_val, X_oos, y_oos), f)
-        except:
-            pass
-    else:
-        try:
-            print('Loading datasets from data/datasets.pickle')
-            with open('data/datasets.pickle', 'rb') as f:
-                obj = pkl.load(f)
-            
-            (X_train, y_train, X_val, y_val, X_oos, y_oos) = obj
-        except:
-            print('Failed to open datasets.pickle')
-            return -1
-        
-    # Replace NaN values in X's
-    X_train, X_val, X_oos = map(replace_NaNs, (X_train, X_val, X_oos))
+    X_train, y_train, X_val, y_val, X_oos, y_oos = preprocess_data()
 
-    train, val, oos = data_to_tensors(X_train, y_train, X_val, y_val, X_oos, y_oos)
-
-    models = []
-    
-    # Train multiple models and collect 
-    print('\nTraining models in ensemble. . .')
-    pipeline = model_pipeline()
-    pipeline.train_ensemble(train, val, X_val)
+    pipeline = ModelPipeline()
+    pipeline.train_ensemble(X_train, y_train, X_val, y_val)
     pipeline.save_models()
 
-    print('\nEvaluating ensemble predictions. . .')
-    y_hat_oos = evaluate_ensemble(pipeline.models, oos)
-    print(y_hat_oos)
-
+    y_hat_oos = pipeline.predict_ensemble(X_oos)
     mse = mean_squared_error(y_hat_oos, y_oos)
-    print(f'\nMSE : {mse}')
+    print(f'Mean Squared Error: {mse}')
 
-class model_pipeline:
+class ModelPipeline:
     def __init__(self, config=None):
-        if config is not None:
-            print('\nLoading configuration. . .')
-            self.config = config
-        else:
-            print('\nUsing default configuration. . .')
-            self.config = {
-                'Num models': 100,
-                'Optimizer': keras.optimizers.Adam,
-                'Model choices': [build_simple_model, build_medium_model, build_complex_model, light_dropout,
-                                  heavy_dropout, complex_bidirectional]
-            }
+        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        
+        self.config = config or {
+            'num_models': 100,
+            'learning_rate_range': (0.0001, 0.01),
+            'epochs_range': (10, 50),
+            'model_choices': [
+                LSTMModel,
+                ComplexBidirectionalLSTM,
+                ModelWithDropout
+            ],
+            'seq_models': [
+                'simple',
+                'medium',
+                'complex',
+                'light_dropout',
+                'heavy_dropout',
+                'complex_bidirectional'
+            ]
+        }
         self.models = []
 
-    def compile_model(self, model, learning_rate):
-        """
-        Compiles the given model with specified learning rate.
-        """
-        optimizer = self.config['Optimizer'](learning_rate=learning_rate)
-        model.compile(optimizer=optimizer, loss='mse')
+    def _train_single_model(self, train_loader, val_loader, input_size, output_size):
+        # Randomly select model architecture and hyperparameters
+        model_class = random.choice(self.config['seq_models'])
+        learning_rate = random.uniform(*self.config['learning_rate_range'])
+        epochs = random.randint(*self.config['epochs_range'])
+
+        model = get_model(model_class, input_size).to(self.device)
+        criterion = nn.MSELoss()
+        optimizer = optim.Adam(model.parameters(), lr=learning_rate)
+
+        for epoch in range(epochs):
+            model.train()
+            for x_batch, y_batch in train_loader:
+                x_batch, y_batch = x_batch.to(self.device), y_batch.to(self.device)
+                
+                optimizer.zero_grad()
+                outputs = model(x_batch)
+                loss = criterion(outputs, y_batch)
+                loss.backward()
+                optimizer.step()
+
+            # Optional validation
+            model.eval()
+            with torch.no_grad():
+                val_loss = sum(
+                    criterion(model(x_val.to(self.device)), y_val.to(self.device))
+                    for x_val, y_val in val_loader
+                ) / len(val_loader)
+
         return model
 
-    def train_ensemble(self, train, val, X):
-        """
-        Trains multiple models with varying hyperparameters and stores them.
-        """
-        print('\nTraining models in ensemble. . .')
-        for i in tqdm(range(self.config['Num models'])):
-            learning_rate = random.uniform(0.0001, 0.01)  # Random learning rate
-            epochs = random.randint(10, 50)  # Random number of epochs
-            model_choice = random.choice(self.config['Model choices'])
-            
-            model = model_choice(X)  # Randomly select a model architecture
-            model = self.compile_model(model, learning_rate)
-            trained_model, _ = train_model(train, val, model, i, epochs)
-            self.models.append(trained_model)
+    def train_ensemble(self, X_train, y_train, X_val, y_val):
+        train_dataset = TensorDataset(
+            torch.FloatTensor(X_train), 
+            torch.FloatTensor(y_train)
+        )
+        val_dataset = TensorDataset(
+            torch.FloatTensor(X_val), 
+            torch.FloatTensor(y_val)
+        )
+
+        train_loader = DataLoader(train_dataset, batch_size=256, shuffle=True)
+        val_loader = DataLoader(val_dataset, batch_size=256)
+
+        input_size = X_train.shape[2]
+        output_size = y_train.shape[1] if len(y_train.shape) > 1 else 1
+
+        print('\nTraining ensemble models...')
+        self.models = []
+        for _ in tqdm(range(self.config['num_models'])):
+            self.models.append(self._train_single_model(train_loader, val_loader, input_size, output_size))
+
+    def predict_ensemble(self, X_oos):
+        test_dataset = torch.FloatTensor(X_oos).to(self.device)
+        
+        with torch.no_grad():
+            predictions = torch.stack([
+                model(test_dataset).cpu() 
+                for model in self.models
+            ])
+        
+        return predictions.mean(dim=0).numpy()
 
     def save_models(self, path='model_weights/ensemble_models.pkl'):
+        os.makedirs(os.path.dirname(path), exist_ok=True)
         with open(path, 'wb') as f:
-            pkl.dump(self.models, f)
+            pickle.dump([model.state_dict() for model in self.models], f)
 
-    def load_models(self, path='model_weights/ensemble_models.pkl'):
+    def load_models(self, path='model_weights/ensemble_models.pkl', input_size=None, output_size=None):
         with open(path, 'rb') as f:
-            self.models = pkl.load(f)
+            state_dicts = pickle.load(f)
+        
+        if input_size is None or output_size is None:
+            raise ValueError("Must provide input_size and output_size when loading models")
+        
+        self.models = []
+        for state_dict in state_dicts:
+            model = LSTMModel(input_size, output_size=output_size)
+            model.load_state_dict(state_dict)
+            self.models.append(model)
 
-def data_to_tensors(X_train: np.ndarray, y_train:np.ndarray, X_val: np.ndarray, y_val: np.ndarray, X_oos: np.ndarray, y_oos: np.ndarray) -> tf.data.Dataset:
-    """
-    Converts pre-processed X->y arrays to tensors for NN training
+class LSTMModel(nn.Module):
+    def __init__(self, input_size, hidden_sizes=[16, 8], output_size=1):
+        super().__init__()
+        layers = []
+        prev_size = input_size
+        for hidden_size in hidden_sizes:
+            layers.append(nn.LSTM(prev_size, hidden_size, batch_first=True))
+            prev_size = hidden_size
+        self.lstm_layers = nn.ModuleList(layers)
+        self.fc = nn.Linear(prev_size, output_size)
 
-    Parameters:
-    -----------
-        X_train, X_val, X_oos: np.array-like
-            ... X datasets to train model on. Expected shape is (Num. obs., Num. timesteps, Num. features)
-        y_train, y_val, y_oos: np.array-like
-            ... y datasets to compare predictions. Expected shape is (Num. obs, 1)
+    def forward(self, x):
+        for lstm in self.lstm_layers:
+            x, _ = lstm(x)
+        return self.fc(x[:, -1, :])
 
-    Returns:
-    --------
-        train_data, val_data, oos_data: tf.data.Dataset
-            ... Built tensors to train in NN's
-    """
-    train_data = tf.data.Dataset.from_tensor_slices((X_train, y_train)).batch(256).prefetch(tf.data.experimental.AUTOTUNE)
-    val_data = tf.data.Dataset.from_tensor_slices((X_val, y_val)).batch(256).prefetch(tf.data.experimental.AUTOTUNE)
-    oos_data = tf.data.Dataset.from_tensor_slices((X_oos, y_oos)).batch(256).prefetch(tf.data.experimental.AUTOTUNE)
-    return train_data, val_data, oos_data
+class ComplexBidirectionalLSTM(nn.Module):
+    def __init__(self, input_size, hidden_sizes=[128, 64, 32, 16], output_size=1):
+        super().__init__()
+        layers = []
+        for hidden_size in hidden_sizes:
+            layers.append(nn.LSTM(input_size, hidden_size, batch_first=True, bidirectional=True))
+            input_size = hidden_size * 2  # bidirectional doubles the input size
+        self.lstm_layers = nn.ModuleList(layers)
+        self.fc = nn.Linear(input_size, output_size)
 
-def evaluate_ensemble(models: list, oos_data: tf.data.Dataset) -> np.ndarray:
-    """
-    From an ensemble model, evaluate on some out-of-sample data.
+    def forward(self, x):
+        for lstm in self.lstm_layers:
+            x, _ = lstm(x)
+        return self.fc(x[:, -1, :])
 
-    Parameters:
-    -----------
-        models: list-like
-        ... List of created ensemble models. Pretrained.
-        oos_data:
-        ... TODO: eval if X_oos would work instead
-    """
+class ModelWithDropout(nn.Module):
+    def __init__(self, input_size, hidden_sizes=[64, 32, 16], dropout_rate=0.2, output_size=1):
+        super().__init__()
+        layers = []
+        prev_size = input_size
+        for hidden_size in hidden_sizes:
+            layers.append(nn.LSTM(prev_size, hidden_size, batch_first=True))
+            layers.append(nn.Dropout(dropout_rate))
+            prev_size = hidden_size
+        self.lstm_layers = nn.ModuleList(layers)
+        self.fc = nn.Linear(prev_size, output_size)
 
-    # Collect predictions from all models
-    predictions = []
-    
-    for model in models:
-        # Predict on out-of-sample data
-        preds = model.predict(oos_data, verbose=0)
-        predictions.append(preds)
-
-    # Calculate ensemble mean prediction
-    y_hat_oos = np.mean(predictions, axis=0)  # Average across models
-    
-    return y_hat_oos
-
-def build_models(X):
-    model = Sequential([
-        # Input(),
-        LSTM(32, input_shape=(PAST, X.shape[2]), return_sequences=True),
-        LSTM(16, return_sequences=True),
-        LSTM(8),
-        Dense(FUTURE)
-    ])
-
-    model.compile(optimizer=keras.optimizers.Adam(learning_rate=0.001), loss='mse')
-
-    return model
-
-def train_model(train, test, model, i, epochs=30):
-    es_callback = keras.callbacks.EarlyStopping(monitor='val_loss', patience=5)
-
-    vbs =0
-    modelckpt_callback = keras.callbacks.ModelCheckpoint(
-                f'./model_weights/{i}_model_checkpoint.weights.h5',
-                monitor='val_loss',
-                save_weights_only=True,
-                save_best_only=True
-            )
-    history = model.fit(
-                train,
-                epochs=epochs,
-                validation_data=test,
-                callbacks=[es_callback, modelckpt_callback],
-                verbose=vbs
-            )
-    
-    return model, history
+    def forward(self, x):
+        for layer in self.lstm_layers:
+            if isinstance(layer, nn.LSTM):
+                x, _ = layer(x)
+            else:
+                x = layer(x)
+        return self.fc(x[:, -1, :])
 
 if __name__ == '__main__':
     main()
