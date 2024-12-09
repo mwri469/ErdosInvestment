@@ -3,7 +3,7 @@ import pandas as pd
 import pickle as pkl
 from tqdm import tqdm
 from globals import *
-from numba import njit, prange
+from numba import njit
 import time
 
 def main():
@@ -167,9 +167,6 @@ def imputed_df_to_data_numba(features_np, exret_np, permno_ids, unique_permnos, 
             X_arr.append(temp_features[i:i+PAST])
             y.append(temp_exret[i+PAST:i+PAST+FUTURE])
 
-    X_arr = np.array(X_arr)
-    y = np.array(y)
-    
     return X_arr, y
 
 
@@ -214,7 +211,9 @@ def imputed_df_to_data_optimised(df, PAST=3, FUTURE=1):
     del features, exret
 
     # Process with Numba-accelerated function
-    return imputed_df_to_data_numba(features_np, exret_np, permno_ids_np, unique_permnos, PAST, FUTURE)
+    x,y = imputed_df_to_data_numba(features_np, exret_np, permno_ids_np, unique_permnos, PAST, FUTURE)
+    x,y = map(np.array, [x,y])
+    return x,y
 
 # Function to load the dataset and exclude unwanted columns
 def load_data():
