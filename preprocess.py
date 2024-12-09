@@ -3,7 +3,6 @@ import torch
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import mean_squared_error
 import pickle as pkl
-import tensorflow as tf
 from lstm_pipe import *
 from globals import *
 
@@ -65,7 +64,7 @@ def preprocess_data():
     assert np.isnan(y_oos).sum() < eps
     
     # Return tensor and scaler for potential use in inverse transformation
-    return (X_train, y_train, X_val, y_val, X_oos, y_oos), scaler
+    return X_train, y_train, X_val, y_val, X_oos, y_oos
 
 if __name__ == "__main__": 
     # Preprocess the data
