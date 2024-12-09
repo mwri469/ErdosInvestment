@@ -1,73 +1,132 @@
-import numpy as np
-import pandas as pd
-import pickle as pkl
 import torch
-from tqdm import tqdm
-import random
+import torch.nn as nn
 
-import tensorflow as tf
-import keras
-from keras import Sequential
-from keras.layers import LSTM, Dense, Bidirectional, Conv1D, MaxPooling1D, Dropout, BatchNormalization
+class SimpleLSTM(nn.Module):
+    def __init__(self, input_size, past_steps=3, future_steps=1):
+        super().__init__()
+        self.lstm1 = nn.LSTM(input_size, 16, batch_first=True, num_layers=1)
+        self.lstm2 = nn.LSTM(16, 8, batch_first=True, num_layers=1)
+        self.fc = nn.Linear(8, future_steps)
 
-def build_simple_model(X):
-    model = Sequential([
-        LSTM(16, return_sequences=True, input_shape=(PAST, X.shape[2])),
-        LSTM(8),
-        Dense(FUTURE)
-    ])
-    return model
+    def forward(self, x):
+        x, _ = self.lstm1(x)
+        x, _ = self.lstm2(x)
+        return self.fc(x[:, -1, :])
 
-def build_medium_model(X):
-    model = Sequential([
-        LSTM(32, return_sequences=True, input_shape=(PAST, X.shape[2])),
-        LSTM(16, return_sequences=True),
-        LSTM(8),
-        Dense(FUTURE)
-    ])
-    return model
+class MediumLSTM(nn.Module):
+    def __init__(self, input_size, past_steps=3, future_steps=1):
+        super().__init__()
+        self.lstm1 = nn.LSTM(input_size, 32, batch_first=True, num_layers=1)
+        self.lstm2 = nn.LSTM(32, 16, batch_first=True, num_layers=1)
+        self.lstm3 = nn.LSTM(16, 8, batch_first=True, num_layers=1)
+        self.fc = nn.Linear(8, future_steps)
 
-def build_complex_model(X):
-    model = Sequential([
-        LSTM(64, return_sequences=True, input_shape=(PAST, X.shape[2])),
-        LSTM(32, return_sequences=True),
-        LSTM(16),
-        Dense(FUTURE)
-    ])
-    return model
+    def forward(self, x):
+        x, _ = self.lstm1(x)
+        x, _ = self.lstm2(x)
+        x, _ = self.lstm3(x)
+        return self.fc(x[:, -1, :])
 
-def light_dropout(X):
-    dropout = 0.1
-    model = Sequential([
-        LSTM(64, return_sequences=True, input_shape=(PAST, X.shape[2])),
-        Dropout(dropout),
-        LSTM(32, return_sequences=True),
-        Dropout(dropout),
-        LSTM(16),
-        Dropout(dropout),
-        Dense(FUTURE)
-    ])
-    return model
+class ComplexLSTM(nn.Module):
+    def __init__(self, input_size, past_steps=3, future_steps=1):
+        super().__init__()
+        self.lstm1 = nn.LSTM(input_size, 64, batch_first=True, num_layers=1)
+        self.lstm2 = nn.LSTM(64, 32, batch_first=True, num_layers=1)
+        self.lstm3 = nn.LSTM(32, 16, batch_first=True, num_layers=1)
+        self.fc = nn.Linear(16, future_steps)
 
-def heavy_dropout(X):
-    dropout = 0.3
-    model = Sequential([
-        LSTM(64, return_sequences=True, input_shape=(PAST, X.shape[2])),
-        Dropout(dropout),
-        LSTM(32, return_sequences=True),
-        Dropout(dropout),
-        LSTM(16),
-        Dropout(dropout-0.2),
-        Dense(FUTURE)
-    ])
-    return model
+    def forward(self, x):
+        x, _ = self.lstm1(x)
+        x, _ = self.lstm2(x)
+        x, _ = self.lstm3(x)
+        return self.fc(x[:, -1, :])
 
-def complex_bidirectional(X):
-    model = Sequential([
-        Bidirectional(LSTM(128, return_sequences=True, input_shape=(PAST, X.shape[2]))),
-        Bidirectional(LSTM(64, return_sequences=True)),
-        Bidirectional(LSTM(32, return_sequences=True)),
-        Bidirectional(LSTM(16)),
-        Dense(FUTURE)
-    ])
-    return model
+class LightDropoutLSTM(nn.Module):
+    def __init__(self, input_size, past_steps=3, future_steps=1, dropout=0.1):
+        super().__init__()
+        self.lstm1 = nn.LSTM(input_size, 64, batch_first=True, num_layers=1)
+        self.dropout1 = nn.Dropout(dropout)
+        self.lstm2 = nn.LSTM(64, 32, batch_first=True, num_layers=1)
+        self.dropout2 = nn.Dropout(dropout)
+        self.lstm3 = nn.LSTM(32, 16, batch_first=True, num_layers=1)
+        self.dropout3 = nn.Dropout(dropout)
+        self.fc = nn.Linear(16, future_steps)
+
+    def forward(self, x):
+        x, _ = self.lstm1(x)
+        x = self.dropout1(x)
+        x, _ = self.lstm2(x)
+        x = self.dropout2(x)
+        x, _ = self.lstm3(x)
+        x = self.dropout3(x)
+        return self.fc(x[:, -1, :])
+
+class HeavyDropoutLSTM(nn.Module):
+    def __init__(self, input_size, past_steps=3, future_steps=1, dropout=0.3):
+        super().__init__()
+        self.lstm1 = nn.LSTM(input_size, 64, batch_first=True, num_layers=1)
+        self.dropout1 = nn.Dropout(dropout)
+        self.lstm2 = nn.LSTM(64, 32, batch_first=True, num_layers=1)
+        self.dropout2 = nn.Dropout(dropout)
+        self.lstm3 = nn.LSTM(32, 16, batch_first=True, num_layers=1)
+        self.dropout3 = nn.Dropout(dropout - 0.2)
+        self.fc = nn.Linear(16, future_steps)
+
+    def forward(self, x):
+        x, _ = self.lstm1(x)
+        x = self.dropout1(x)
+        x, _ = self.lstm2(x)
+        x = self.dropout2(x)
+        x, _ = self.lstm3(x)
+        x = self.dropout3(x)
+        return self.fc(x[:, -1, :])
+
+class ComplexBidirectionalLSTM(nn.Module):
+    def __init__(self, input_size, past_steps=3, future_steps=1):
+        super().__init__()
+        # First bidirectional layer
+        self.lstm1 = nn.LSTM(
+            input_size, 128, 
+            batch_first=True, 
+            bidirectional=True, 
+            num_layers=1
+        )
+        # Subsequent bidirectional layers
+        self.lstm2 = nn.LSTM(
+            256, 64, 
+            batch_first=True, 
+            bidirectional=True, 
+            num_layers=1
+        )
+        self.lstm3 = nn.LSTM(
+            128, 32, 
+            batch_first=True, 
+            bidirectional=True, 
+            num_layers=1
+        )
+        self.lstm4 = nn.LSTM(
+            64, 16, 
+            batch_first=True, 
+            bidirectional=True, 
+            num_layers=1
+        )
+        self.fc = nn.Linear(32, future_steps)
+
+    def forward(self, x):
+        x, _ = self.lstm1(x)  # Bidirectional doubles the output feature dim
+        x, _ = self.lstm2(x)  
+        x, _ = self.lstm3(x)  
+        x, _ = self.lstm4(x)  
+        return self.fc(x[:, -1, :])
+
+# Mapping function for easier instantiation
+def get_model(model_type, input_size, past_steps=3, future_steps=1):
+    model_map = {
+        'simple': SimpleLSTM,
+        'medium': MediumLSTM,
+        'complex': ComplexLSTM,
+        'light_dropout': LightDropoutLSTM,
+        'heavy_dropout': HeavyDropoutLSTM,
+        'complex_bidirectional': ComplexBidirectionalLSTM
+    }
+    return model_map[model_type](input_size, past_steps, future_steps)
