@@ -8,6 +8,7 @@ class SimpleLSTM(nn.Module):
         self.lstm2 = nn.LSTM(16, 8, batch_first=True, num_layers=1)
         self.fc = nn.Linear(8, future_steps)
 
+    @torch.compile
     def forward(self, x):
         x, _ = self.lstm1(x)
         x, _ = self.lstm2(x)
@@ -21,6 +22,7 @@ class MediumLSTM(nn.Module):
         self.lstm3 = nn.LSTM(16, 8, batch_first=True, num_layers=1)
         self.fc = nn.Linear(8, future_steps)
 
+    @torch.compile
     def forward(self, x):
         x, _ = self.lstm1(x)
         x, _ = self.lstm2(x)
@@ -35,6 +37,7 @@ class ComplexLSTM(nn.Module):
         self.lstm3 = nn.LSTM(32, 16, batch_first=True, num_layers=1)
         self.fc = nn.Linear(16, future_steps)
 
+    @torch.compile
     def forward(self, x):
         x, _ = self.lstm1(x)
         x, _ = self.lstm2(x)
@@ -52,6 +55,7 @@ class LightDropoutLSTM(nn.Module):
         self.dropout3 = nn.Dropout(dropout)
         self.fc = nn.Linear(16, future_steps)
 
+    @torch.compile
     def forward(self, x):
         x, _ = self.lstm1(x)
         x = self.dropout1(x)
@@ -72,6 +76,7 @@ class HeavyDropoutLSTM(nn.Module):
         self.dropout3 = nn.Dropout(dropout - 0.2)
         self.fc = nn.Linear(16, future_steps)
 
+    @torch.compile
     def forward(self, x):
         x, _ = self.lstm1(x)
         x = self.dropout1(x)
@@ -112,6 +117,7 @@ class ComplexBidirectionalLSTM(nn.Module):
         )
         self.fc = nn.Linear(32, future_steps)
 
+    @torch.compile
     def forward(self, x):
         x, _ = self.lstm1(x)  # Bidirectional doubles the output feature dim
         x, _ = self.lstm2(x)  

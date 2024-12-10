@@ -18,6 +18,8 @@ def main():
 
     X_train, y_train, X_val, y_val, X_oos, y_oos = preprocess_data()
 
+    torch.set_float32_matmul_precision('high')
+
     pipeline = ModelPipeline()
     pipeline.train_ensemble(X_train, y_train, X_val, y_val)
     pipeline.save_models()
@@ -31,14 +33,9 @@ class ModelPipeline:
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         
         self.config = config or {
-            'num_models': 100,
+            'num_models': 20,
             'learning_rate_range': (0.0001, 0.01),
             'epochs_range': (10, 50),
-            'model_choices': [
-                LSTMModel,
-                ComplexBidirectionalLSTM,
-                ModelWithDropout
-            ],
             'seq_models': [
                 'simple',
                 'medium',
@@ -50,6 +47,13 @@ class ModelPipeline:
         }
         self.models = []
 
+        # Compile each model during training
+        self._train_single_model = torch.compile(
+            self._train_single_model, 
+            mode='max-autotune'
+        )
+
+    @torch.compile
     def _train_single_model(self, train_loader, val_loader, input_size, output_size):
         # Randomly select model architecture and hyperparameters
         model_class = random.choice(self.config['seq_models'])
@@ -59,6 +63,7 @@ class ModelPipeline:
         model = get_model(model_class, input_size).to(self.device)
         criterion = nn.MSELoss()
         optimizer = optim.Adam(model.parameters(), lr=learning_rate)
+        self.model_funcs.append({'class': model_class, 'input': input_size})
 
         for epoch in range(epochs):
             model.train()
@@ -81,6 +86,7 @@ class ModelPipeline:
 
         return model
 
+    @torch.compile
     def train_ensemble(self, X_train, y_train, X_val, y_val):
         train_dataset = TensorDataset(
             torch.FloatTensor(X_train), 
@@ -99,6 +105,7 @@ class ModelPipeline:
 
         print('\nTraining ensemble models...')
         self.models = []
+        self.model_funcs = []
         for _ in tqdm(range(self.config['num_models'])):
             self.models.append(self._train_single_model(train_loader, val_loader, input_size, output_size))
 
@@ -127,60 +134,9 @@ class ModelPipeline:
         
         self.models = []
         for state_dict in state_dicts:
-            model = LSTMModel(input_size, output_size=output_size)
+            model = get_model
             model.load_state_dict(state_dict)
             self.models.append(model)
-
-class LSTMModel(nn.Module):
-    def __init__(self, input_size, hidden_sizes=[16, 8], output_size=1):
-        super().__init__()
-        layers = []
-        prev_size = input_size
-        for hidden_size in hidden_sizes:
-            layers.append(nn.LSTM(prev_size, hidden_size, batch_first=True))
-            prev_size = hidden_size
-        self.lstm_layers = nn.ModuleList(layers)
-        self.fc = nn.Linear(prev_size, output_size)
-
-    def forward(self, x):
-        for lstm in self.lstm_layers:
-            x, _ = lstm(x)
-        return self.fc(x[:, -1, :])
-
-class ComplexBidirectionalLSTM(nn.Module):
-    def __init__(self, input_size, hidden_sizes=[128, 64, 32, 16], output_size=1):
-        super().__init__()
-        layers = []
-        for hidden_size in hidden_sizes:
-            layers.append(nn.LSTM(input_size, hidden_size, batch_first=True, bidirectional=True))
-            input_size = hidden_size * 2  # bidirectional doubles the input size
-        self.lstm_layers = nn.ModuleList(layers)
-        self.fc = nn.Linear(input_size, output_size)
-
-    def forward(self, x):
-        for lstm in self.lstm_layers:
-            x, _ = lstm(x)
-        return self.fc(x[:, -1, :])
-
-class ModelWithDropout(nn.Module):
-    def __init__(self, input_size, hidden_sizes=[64, 32, 16], dropout_rate=0.2, output_size=1):
-        super().__init__()
-        layers = []
-        prev_size = input_size
-        for hidden_size in hidden_sizes:
-            layers.append(nn.LSTM(prev_size, hidden_size, batch_first=True))
-            layers.append(nn.Dropout(dropout_rate))
-            prev_size = hidden_size
-        self.lstm_layers = nn.ModuleList(layers)
-        self.fc = nn.Linear(prev_size, output_size)
-
-    def forward(self, x):
-        for layer in self.lstm_layers:
-            if isinstance(layer, nn.LSTM):
-                x, _ = layer(x)
-            else:
-                x = layer(x)
-        return self.fc(x[:, -1, :])
 
 if __name__ == '__main__':
     main()
